@@ -1,0 +1,129 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  build-and-unit-test:
+    name: Build, lint, unit test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Fastest possible signal: pure schema validation with no build step
+      # and no infrastructure (no Docker, no Postgres, no RabbitMQ). Runs
+      # first so a contract regression or breaking change to an event
+      # schema (see libs/contracts/src/events/v1/create-message.compat.spec.ts)
+      # fails the workflow before spending time on anything else.
+      - name: Validate event contracts
+        run: npm run test:contracts
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build gateway
+        run: npm run build
+
+      - name: Build messaging
+        run: npx nest build messaging
+
+      - name: Unit tests
+        run: npm run test -- --ci
+
+      - name: Module bootstrap test (e2e)
+        run: npm run test:e2e -- --ci
+
+  integration-test:
+    name: Full-stack integration test
+    runs-on: ubuntu-latest
+    needs: build-and-unit-test
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Builds and starts the isolated postgres/rabbitmq/migrate/messaging/
+      # gateway stack defined in docker-compose.test.yml. This mirrors what
+      # a developer runs locally via `npm run test:integration`.
+      - name: Start integration stack
+        run: npm run test:integration:up
+        timeout-minutes: 10
+
+      # docker-compose.test.yml already defines healthchecks for postgres
+      # and rabbitmq, and `service_healthy`/`service_completed_successfully`
+      # dependency conditions for migrate/messaging/gateway. This step waits
+      # for every container in the stack to leave the "starting" state
+      # before the test suite connects to them, instead of relying on the
+      # project's fixed 10s sleep (see package.json's `test:integration`
+      # script), so CI fails fast and with a clear reason if a container
+      # never becomes healthy.
+      - name: Wait for stack health
+        run: |
+          for i in $(seq 1 60); do
+            statuses=$(docker-compose -f docker-compose.test.yml ps --format '{{.Health}}')
+            if echo "$statuses" | grep -qiE 'starting'; then
+              echo "Waiting for containers to become healthy... ($i/60)"
+              sleep 2
+              continue
+            fi
+            if echo "$statuses" | grep -qiE 'unhealthy'; then
+              echo "A container reported unhealthy:"
+              docker-compose -f docker-compose.test.yml ps
+              exit 1
+            fi
+            echo "All containers reported healthy or have no healthcheck."
+            docker-compose -f docker-compose.test.yml ps
+            exit 0
+          done
+          echo "Timed out waiting for containers to become healthy."
+          docker-compose -f docker-compose.test.yml ps
+          exit 1
+
+      - name: Run integration tests
+        run: npm run test:integration:run
+        timeout-minutes: 5
+
+      - name: Upload container logs on failure
+        if: failure()
+        run: docker-compose -f docker-compose.test.yml logs --no-color > integration-stack.log
+
+      - name: Upload logs artifact
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-stack-logs
+          path: integration-stack.log
+          retention-days: 7
+
+      - name: Tear down integration stack
+        if: always()
+        run: npm run test:integration:down

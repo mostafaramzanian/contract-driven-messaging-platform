@@ -1,0 +1,107 @@
+# Host port mappings here (5432, 5672, 15672, 3005) are intentionally the
+# SAME as docker-compose.yml's (the dev stack), so that every environment
+# -- CI, this file run directly, and the host-side test runner -- talks to
+# RabbitMQ/Postgres/the gateway over one single, predictable address per
+# service, with no environment-specific port substitution anywhere.
+#
+# Tradeoff: this test stack and the dev stack (docker-compose.yml) cannot
+# both be running on the same machine at the same time -- starting this
+# stack while `docker-compose up` (dev) is already running will fail with
+# a port-bind conflict, rather than the two coexisting on different ports.
+# This is deliberate: a single, deterministic, env-driven address per
+# service was prioritized over the convenience of running both stacks
+# side by side. Stop the dev stack (`docker-compose down`) before running
+# `npm run test:integration`.
+services:
+  postgres:
+    image: postgres:15
+    container_name: showcase-test-postgres
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-test_password}
+      POSTGRES_DB: ${DB_NAME:-showcase_test_db}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-admin} -d ${DB_NAME:-showcase_test_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - showcase-test-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: showcase-test-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - showcase-test-network
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: showcase-test-migrate
+    env_file:
+      - .env.test
+    environment:
+      DB_HOST: postgres
+    command: ["npm", "run", "migration:run"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - showcase-test-network
+
+  messaging:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: showcase-test-messaging
+    env_file:
+      - .env.test
+    environment:
+      DB_HOST: postgres
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+    command: ["node", "dist/apps/messaging/main"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    networks:
+      - showcase-test-network
+
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: showcase-test-gateway
+    env_file:
+      - .env.test
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      PORT: 3005
+    ports:
+      - "3005:3005"
+    command: ["node", "dist/apps/gateway/main"]
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      messaging:
+        condition: service_started
+    networks:
+      - showcase-test-network
+
+networks:
+  showcase-test-network:
+    driver: bridge
