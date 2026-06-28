@@ -1,8 +1,8 @@
 # Architecture Decision Records
 
-This directory contains the Architecture Decision Records (ADRs) for the `contract-driven-messaging-platform` repository. Each ADR documents a significant architectural decision, the context that motivated it, the alternatives that were considered, and the consequences that follow from the decision.
+This directory contains the Architecture Decision Records (ADRs) for the messaging infrastructure layer of the ERP platform. Each ADR documents a significant architectural decision within the **infrastructure layer** — the messaging backbone, reliability mechanisms, contract governance, and observability instrumentation. Decisions about the ERP's business modules, domain logic, and deployment topology are outside the scope of this directory.
 
-ADRs are immutable once accepted. Superseded decisions are marked as such and link to the superseding ADR.
+Each ADR documents the context that motivated the decision, the alternatives that were considered, and the consequences that follow — including operational consequences. ADRs are immutable once accepted. Superseded decisions are marked as such and link to the superseding ADR.
 
 ## Index
 

@@ -1,8 +1,8 @@
 # Incident Postmortems
 
-This directory contains postmortem reports for production incidents affecting the `contract-driven-messaging-platform`. Postmortems are written within 48 hours of incident resolution and are reviewed in the weekly engineering sync.
+This directory contains postmortem reports for incidents affecting the messaging infrastructure layer. These postmortems document failure sequences, recovery timelines, and follow-up work that resulted from operating this layer. They demonstrate how reliability engineering is practiced in this codebase — not as a theoretical exercise, but as a response to specific failure modes that the infrastructure layer experienced.
 
-Postmortems are blameless. They document what happened and what the system and team can do better — not who made a mistake.
+Postmortems are blameless. They document what happened and what the system and team can do better — not who made a mistake. Each postmortem links to the code or configuration change that followed from the incident.
 
 ## Index
 

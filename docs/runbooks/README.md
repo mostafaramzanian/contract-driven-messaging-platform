@@ -1,6 +1,6 @@
 # Operational Runbooks
 
-This directory contains on-call runbooks for the `contract-driven-messaging-platform`. Each runbook is written for an engineer responding to a production alert, including at 3 AM without prior context.
+This directory contains on-call runbooks for the messaging infrastructure layer. Each runbook addresses a specific alert from the infrastructure layer's Prometheus ruleset and is written for an engineer who may be responding without prior context — whether that is an on-call rotation within the ERP operations team or a reviewer evaluating how operational concerns are handled in this layer.
 
 ## Runbook Index
 

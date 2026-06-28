@@ -2,7 +2,80 @@
 
 ![Architecture diagram — five-layer system overview: Gateway, RabbitMQ, Messaging Service, PostgreSQL, Observability](docs/architecture.svg)
 
-A production-grade event-driven system demonstrating reliable message delivery between services using RabbitMQ, the transactional outbox pattern, and schema-versioned contracts. Built as an engineering portfolio project to explore the failure modes that emerge when distributed systems rely on implicit message contracts and unguarded delivery semantics.
+---
+
+## About This Repository
+
+This repository contains the **messaging infrastructure layer** of a production-oriented modular ERP system. It exists as a standalone public project to demonstrate the distributed systems engineering behind that platform — not to expose the business logic that runs on top of it.
+
+The ERP itself is a private monorepo containing business modules: Inventory, Accounting, CRM, HR, Purchasing, Sales, Workflow, and their internal domain logic. Those modules remain private. This repository isolates and documents only the infrastructure decisions that are not domain-specific: how events flow reliably between services, how contracts are enforced across async boundaries, and how the system behaves when dependencies fail.
+
+**Why this scope?** The engineering problems in this repository — schema drift, lost events, duplicate processing, retry storms, distributed tracing across async boundaries — are not specific to any ERP domain. They are general distributed systems problems. Extracting them into a standalone project makes them legible and verifiable without exposing proprietary business logic.
+
+**What is demonstrated here:**
+
+- Event-Driven Architecture over RabbitMQ with explicit topology management
+- Reliability Engineering: transactional outbox, idempotent consumer, publisher confirms, fencing tokens
+- Schema-versioned contracts with backward-compatible evolution and upcasting
+- Distributed tracing across async boundaries using W3C trace context
+- Production observability: OpenTelemetry, Prometheus, four Grafana dashboards
+- Architecture Decision Records documenting non-obvious choices and their tradeoffs
+- Operational runbooks and blameless postmortems as first-class engineering artifacts
+- A performance testing suite with capacity analysis
+
+**What is intentionally omitted:**
+
+- ERP business modules (Inventory, Accounting, CRM, HR, Purchasing, Sales, Workflow)
+- Domain entities, business rules, and application-layer logic
+- Authentication, multi-tenancy, and customer-facing APIs
+- Deployment manifests and production infrastructure configuration
+
+The omissions are not gaps — they are the private ERP's concern. This repository documents the layer underneath.
+
+---
+
+## System Context
+
+The diagram below shows where this repository sits in relation to the full ERP platform.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  ERP Platform                                            PRIVATE │
+│                                                                  │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │  Business Modules                                        │   │
+│  │  Inventory · Accounting · CRM · HR · Purchasing · Sales  │   │
+│  │  Workflow · Internal APIs · Domain Logic                 │   │
+│  └─────────────────────┬────────────────────────────────────┘   │
+│                         │ events                                 │
+│  ┌──────────────────────▼────────────────────────────────────┐  │
+│  │  Infrastructure Layer                             PUBLIC   │  │
+│  │                                                           │  │
+│  │  ┌──────────────┐      ┌───────────────────────────────┐  │  │
+│  │  │   Gateway    │─────▶│  Transactional Outbox         │  │  │
+│  │  │  Service     │      │  (gateway_outbox_events)      │  │  │
+│  │  └──────────────┘      └──────────────┬────────────────┘  │  │
+│  │                                        │ relay + confirms  │  │
+│  │  ┌─────────────────────────────────────▼──────────────┐   │  │
+│  │  │  RabbitMQ Topology                                 │   │  │
+│  │  │  messaging.direct · messaging.dlx · retry.q · dlq  │   │  │
+│  │  └─────────────────────┬──────────────────────────────┘   │  │
+│  │                         │ manual ACK                       │  │
+│  │  ┌──────────────────────▼────────────────────────────────┐│  │
+│  │  │  Messaging Service                                    ││  │
+│  │  │  Validate · Upcast · Idempotency · Business Write    ││  │
+│  │  │  Outbox (outbox_events) · DLQ Consumer               ││  │
+│  │  └───────────────────────────────────────────────────────┘│  │
+│  │                                                            │  │
+│  │  Observability: OpenTelemetry · Prometheus · Grafana · Pino│  │
+│  └────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**PRIVATE** — Business modules, domain logic, ERP application layer  
+**PUBLIC** — This repository: messaging infrastructure, reliability layer, observability
+
+The infrastructure layer is domain-agnostic. It accepts typed events from the Gateway and delivers them reliably to downstream services. It knows nothing about inventory quantities, accounting entries, or HR workflows — those concerns belong to the modules that publish and consume events.
 
 ---
 
@@ -34,6 +107,8 @@ A two-service NestJS monorepo demonstrating production-grade event-driven archit
 
 ## Table of Contents
 
+- [About This Repository](#about-this-repository)
+- [System Context](#system-context)
 - [TL;DR](#tldr)
 - [Repository Tour](#repository-tour)
 - [Architecture Overview](#architecture-overview)
@@ -59,6 +134,7 @@ A two-service NestJS monorepo demonstrating production-grade event-driven archit
 - [Security Considerations](#security-considerations)
 - [Interview Discussion Topics](#interview-discussion-topics)
 - [Repository Evolution](docs/evolution.md)
+- [Engineering Scope](docs/project-scope.md)
 - [Project Structure](#project-structure)
 
 </details>
@@ -67,30 +143,42 @@ A two-service NestJS monorepo demonstrating production-grade event-driven archit
 
 ## Repository Tour
 
-A reviewer spending 60 seconds on this repository should be able to find any piece of information in one click. Use this table as the entry point.
+The infrastructure layer is designed so that any of its concerns — reliability, observability, contract governance, operational procedures — can be read independently. This table is the entry point.
 
-| If you want to... | Go here | Why it matters |
+| If you want to... | Go here | Purpose |
 |---|---|---|
-| Understand the full system at a glance | [Architecture Overview](#architecture-overview) + [hero diagram](docs/architecture.svg) | Five-layer SVG showing all service boundaries, event flows, failure paths, and observability taps |
-| Verify the reliability claims | [Reliability Guarantees](#reliability-guarantees) | Each guarantee maps to a named mechanism and a test that exercises the failure path |
-| See how the RabbitMQ topology is wired | [ADR-001](docs/adr/ADR-001-rabbitmq-vs-kafka.md) + [Failure Scenarios](#failure-scenarios-and-recovery) | Exchange-queue-binding model, DLX routing, per-message TTL backoff |
-| Read why each architectural decision was made | [docs/adr/](docs/adr/) | 6 ADRs covering broker selection, outbox pattern, at-least-once delivery, event versioning, fencing tokens, and contract design |
-| Understand every failure mode and its recovery | [Failure Scenarios and Recovery](#failure-scenarios-and-recovery) + [Runbooks](docs/runbooks/) | Named failure classes, what triggers them, and step-by-step operator recovery procedures |
-| Read the honest tradeoffs | [Tradeoffs and Limitations](#tradeoffs-and-limitations) | 10 architectural tradeoffs with Context, Benefits, Drawbacks, and Alternatives |
-| See what was learned from building this | [Lessons Learned](#lessons-learned) + [docs/evolution.md](docs/evolution.md) | 8 retrospective lessons and a 10-phase evolution narrative |
-| Import production dashboards | [docs/grafana-dashboards.json](docs/grafana-dashboards.json) | 4 pre-built Grafana dashboards — import once, observe everything |
-| See what every Prometheus metric detects | [Observability → Metrics](#observability) | 15 metrics mapped to the specific failure mode each one detects |
-| Respond to a 3 AM alert | [docs/runbooks/](docs/runbooks/) | 5 runbooks with minute-by-minute investigation steps and exact SQL/curl commands |
-| Read real incident analysis | [docs/postmortems/](docs/postmortems/) | 5 blameless postmortems documenting actual failure sequences, not hypothetical scenarios |
-| Understand throughput limits and scaling | [perf/analysis/capacity-model.md](perf/analysis/capacity-model.md) | Component-by-component ceiling calculations with failure sequence ordering |
-| Run the load tests | [perf/k6/scenarios/](perf/k6/scenarios/) | 5 k6 scenarios covering baseline, ramp-to-saturation, backlog, retry storm, and relay scaling |
-| Discuss this in an engineering interview | [Interview Discussion Topics](#interview-discussion-topics) | Questions organized by distributed systems pattern, with depth indicators |
+| Understand the full system at a glance | [Architecture Overview](#architecture-overview) + [hero diagram](docs/architecture.svg) | Establish the service boundary, data flow, and failure paths before reading any code |
+| Understand why this repository exists | [About This Repository](#about-this-repository) + [docs/project-scope.md](docs/project-scope.md) | Clarify what the ERP is, what this layer does, and what is intentionally omitted |
+| Verify the reliability claims | [Reliability Guarantees](#reliability-guarantees) | Each guarantee maps to a named mechanism, a test that induces the failure, and the recovery behavior |
+| Understand how the RabbitMQ topology is wired | [ADR-001](docs/adr/ADR-001-rabbitmq-vs-kafka.md) + [Failure Scenarios](#failure-scenarios-and-recovery) | Exchange-queue-binding model, DLX routing, per-message TTL backoff |
+| Read why each architectural decision was made | [docs/adr/](docs/adr/) | Capture the reasoning, alternatives considered, and tradeoffs — 6 ADRs covering all non-obvious choices |
+| Understand every failure mode and its recovery | [Failure Scenarios and Recovery](#failure-scenarios-and-recovery) + [Runbooks](docs/runbooks/) | Map each failure class to what triggers it and how the system recovers with or without operator intervention |
+| Read the honest tradeoffs | [Tradeoffs and Limitations](#tradeoffs-and-limitations) | 10 architectural tradeoffs with Context, Benefits, Drawbacks, and Alternatives — no hedging |
+| See what was learned from building this | [Lessons Learned](#lessons-learned) + [docs/evolution.md](docs/evolution.md) | 8 retrospective lessons on the decisions that were wrong, and the 10-phase evolution that led to the current design |
+| Import production dashboards | [docs/grafana-dashboards.json](docs/grafana-dashboards.json) | 4 pre-built Grafana dashboards covering system overview, reliability, outbox health, and distributed tracing |
+| See what every Prometheus metric detects | [Observability → Metrics](#observability) | 15 metrics, each mapped to the specific failure mode it surfaces |
+| Respond to a production alert | [docs/runbooks/](docs/runbooks/) | Guide on-call engineers through investigation and recovery with exact SQL and curl commands — 5 runbooks |
+| Read real incident analysis | [docs/postmortems/](docs/postmortems/) | Document operational learning from named incidents — 5 blameless postmortems with timeline and follow-up items |
+| Understand throughput limits and scaling | [perf/analysis/capacity-model.md](perf/analysis/capacity-model.md) | Component-by-component ceiling calculations with failure-sequence ordering |
+| Run the load tests | [perf/k6/scenarios/](perf/k6/scenarios/) | Reproducible k6 scenarios for baseline throughput, saturation, backlog, retry storm, and relay scaling |
+| Discuss this in an engineering interview | [Interview Discussion Topics](#interview-discussion-topics) | Topics organized by pattern, with the failure mode each topic is grounded in |
 
 ---
 
 ## Architecture Overview
 
-The hero diagram at the top of this README provides a full visual overview. The Mermaid diagram below is an alternative for environments that render Mermaid natively (Notion, GitLab, IDE previews).
+The system is organized into six layers. The diagram below shows all service boundaries, event flows, failure paths, and observability taps within the infrastructure layer. Business modules (Inventory, Accounting, CRM, etc.) sit above the Gateway and are not represented here — they interact with the infrastructure layer through the Gateway's HTTP API.
+
+**Layers in this repository:**
+
+| Layer | Components | Responsibility |
+|---|---|---|
+| Application | Gateway Service, Messaging Service | Accept requests, validate contracts, orchestrate writes |
+| Messaging | RabbitMQ topology (exchanges, queues, DLX) | Route events, enforce delivery guarantees, provide DLQ |
+| Persistence | PostgreSQL (outbox tables, idempotency, business state) | Atomic writes, durable event log, retry budget |
+| Reliability | Outbox relay, fencing tokens, stale-lock reaper, retry publisher | Ensure delivery despite partial failures |
+| Observability | OpenTelemetry, Prometheus, Pino | Instrument every layer, propagate context across async boundaries |
+| Operations | Runbooks, dashboards, alert rules | Enable on-call response without requiring source-code access |
 
 ### Full system diagram (Mermaid)
 
@@ -844,7 +932,7 @@ The test asserts three properties after a 180-second recovery window:
 
 ### Stated limits
 
-This is a two-service demonstration system. It has not been load-tested. The numbers above are back-of-envelope estimates for discussion purposes, not benchmarks.
+This is the messaging infrastructure layer scoped to two services. The numbers above are derived from the component characteristics and confirmed directionally by the k6 scenarios in `perf/` — they are estimates, not benchmarks from a production-scale deployment. See [`perf/analysis/capacity-model.md`](perf/analysis/capacity-model.md) for the methodology.
 
 ---
 
@@ -906,7 +994,7 @@ This section documents deliberate architectural decisions and what they cost. Ea
 
 **Context:** Both PostgreSQL and RabbitMQ run in a single region. All relay services, consumers, and outbox tables are co-located.
 
-**Why:** This is a portfolio project, not a production deployment. Cross-region replication introduces conflict resolution strategies, clock skew handling, and partition tolerance decisions that require a concrete business domain to reason about correctly. Demonstrating those decisions without a real operational context produces pseudocode masquerading as architecture.
+**Why:** This repository demonstrates the messaging infrastructure layer, not the ERP's full deployment topology. Cross-region replication introduces conflict resolution strategies, clock skew handling, and partition tolerance decisions that require a concrete business domain to reason about correctly. Demonstrating those decisions without a real operational context produces pseudocode masquerading as architecture.
 
 **Benefits:** Simple operational model. No cross-region consistency decisions. Failover behavior is well-defined: the whole stack fails, and recovery is a restart.
 
@@ -1343,4 +1431,4 @@ observability/
 
 ---
 
-*This repository is a portfolio project. It is designed to be read, discussed, and questioned — not deployed as-is.*
+*This is the public infrastructure layer of a private ERP system. It is designed to be read, questioned, and discussed — not deployed as a standalone product.*

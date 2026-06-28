@@ -4,6 +4,13 @@ This file is the quick-reference index for everything in `docs/`. Each entry sta
 
 ---
 
+## Repository Context
+
+| File | When to read |
+|------|-------------|
+| `project-scope.md` | Repository goals, non-goals, why ERP modules are private, target audience, and interview value |
+| `hiring-review.md` | Staff/Principal Engineer perspective — what the repository communicates, remaining gaps |
+
 ## Architecture & Design
 
 | File | When to read |
@@ -16,28 +23,47 @@ This file is the quick-reference index for everything in `docs/`. Each entry sta
 
 ## Decision Records
 
-See `adr/` — 6 ADRs covering every major architectural choice.
+See `adr/` — 6 ADRs covering every major architectural choice in the infrastructure layer.
 
-## Operational
+| ADR | Decision |
+|-----|---------|
+| ADR-001 | RabbitMQ as message broker |
+| ADR-002 | Contract-driven event design |
+| ADR-003 | Transactional outbox pattern |
+| ADR-004 | At-least-once delivery with idempotent consumers |
+| ADR-005 | Immutable event versioning with upcasting |
+| ADR-006 | Fencing tokens for outbox relay concurrency |
+
+## Implementation
 
 | File | When to read |
 |------|-------------|
 | `observability.md` | Correlation ID propagation, tracing setup, metrics wiring |
-| `production-readiness-fixes.md` | Changes from staff-level production-readiness review |
-| `architectural-gap-closure.md` | Producer-side outbox + consumer event routing fixes |
 | `testing.md` | Four-layer test strategy and how to run each layer |
+| `production-readiness-fixes.md` | Changes made in response to staff-level production-readiness review |
+| `architectural-gap-closure.md` | Producer-side outbox + consumer event routing fixes |
 
 ## Runbooks & Postmortems
 
 - `runbooks/` — 5 operator runbooks with step-by-step investigation commands
-- `postmortems/` — 5 blameless postmortems documenting real failure sequences
+  - RB-001: DLQ growth spike
+  - RB-002: RabbitMQ outage
+  - RB-003: Outbox relay backlog
+  - RB-004: Publisher confirm failure
+  - RB-005: Trace propagation failure
+- `postmortems/` — 5 blameless postmortems documenting actual failure sequences
+  - PM-001: RabbitMQ broker OOM kill
+  - PM-002: Outbox relay backlog
+  - PM-003: DLQ growth / connection pool exhaustion
+  - PM-004: Publisher confirm failures
+  - PM-005: Trace propagation break / OTel Collector OOM
 
 ## Observability Assets
 
 | File | When to use |
 |------|-------------|
 | `grafana-dashboards.json` | Import into Grafana — 4 pre-built dashboards |
-| `dashboard-system-overview.svg` | Screenshot of the system overview dashboard |
-| `dashboard-reliability.svg` | Screenshot of the reliability dashboard |
-| `dashboard-outbox-health.svg` | Screenshot of the outbox health dashboard |
-| `dashboard-distributed-tracing.svg` | Screenshot of the distributed tracing dashboard |
+| `dashboard-system-overview.svg` | Screenshot: system throughput and SLO panel |
+| `dashboard-reliability.svg` | Screenshot: retry funnel and DLQ alert |
+| `dashboard-outbox-health.svg` | Screenshot: outbox pending depth and relay latency |
+| `dashboard-distributed-tracing.svg` | Screenshot: E2E latency and trace orphan count |
