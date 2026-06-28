@@ -15,8 +15,10 @@ export class MessagesController {
   }
 
   @MessagePattern('findAllMessages')
-  findAll(): Promise<Message[]> {
-    return this.messagesService.findAll();
+  findAll(
+    @Payload() query: { limit?: number; cursor?: string } = {},
+  ): Promise<Message[]> {
+    return this.messagesService.findAll(query);
   }
 
   @MessagePattern('findOneMessage')

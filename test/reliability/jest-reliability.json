@@ -1,0 +1,23 @@
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": "../../",
+  "testEnvironment": "node",
+  "testMatch": ["**/test/reliability/**/*.reliability-spec.ts"],
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "moduleNameMapper": {
+    "^@app/common(|/.*)$": "<rootDir>/libs/common/src/$1",
+    "^@app/contracts(|/.*)$": "<rootDir>/libs/contracts/src/$1"
+  },
+  "testTimeout": 360000,
+  "maxWorkers": 1,
+  "verbose": true,
+  "forceExit": true,
+  "bail": false,
+  "globals": {
+    "ts-jest": {
+      "tsconfig": "<rootDir>/tsconfig.json"
+    }
+  }
+}

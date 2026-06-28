@@ -1,0 +1,159 @@
+{
+  "uid": "cdmp-load-testing",
+  "title": "CDMP — Load Testing & Capacity Planning",
+  "description": "k6 load test results correlated with system metrics",
+  "tags": ["contract-driven-messaging", "load-test", "capacity"],
+  "timezone": "utc",
+  "refresh": "5s",
+  "time": { "from": "now-1h", "to": "now" },
+  "panels": [
+    {
+      "id": 1, "type": "stat", "title": "Current Throughput (msg/s)",
+      "gridPos": { "x": 0, "y": 0, "w": 4, "h": 4 },
+      "targets": [{ "expr": "rate(messages_processed_total[30s])", "legendFormat": "msg/s" }],
+      "fieldConfig": { "defaults": { "unit": "reqps", "thresholds": { "steps": [
+        { "color": "blue", "value": null }, { "color": "yellow", "value": 200 }, { "color": "red", "value": 500 }
+      ]}}}
+    },
+    {
+      "id": 2, "type": "stat", "title": "Gateway p99 Latency",
+      "gridPos": { "x": 4, "y": 0, "w": 4, "h": 4 },
+      "targets": [{ "expr": "histogram_quantile(0.99, rate(http_request_duration_ms_bucket{handler='/api/messages'}[30s]))", "legendFormat": "p99 ms" }],
+      "fieldConfig": { "defaults": { "unit": "ms", "thresholds": { "steps": [
+        { "color": "green", "value": null }, { "color": "yellow", "value": 200 }, { "color": "red", "value": 500 }
+      ]}}}
+    },
+    {
+      "id": 3, "type": "stat", "title": "Outbox Pending (gateway)",
+      "gridPos": { "x": 8, "y": 0, "w": 4, "h": 4 },
+      "targets": [{ "expr": "outbox_pending_events{source='gateway'}", "legendFormat": "pending" }],
+      "fieldConfig": { "defaults": { "thresholds": { "steps": [
+        { "color": "green", "value": null }, { "color": "yellow", "value": 200 }, { "color": "red", "value": 1000 }
+      ]}}}
+    },
+    {
+      "id": 4, "type": "stat", "title": "Retry Amplification Factor",
+      "gridPos": { "x": 12, "y": 0, "w": 4, "h": 4 },
+      "targets": [{ "expr": "rate(retry_count_total[1m]) / rate(messages_processed_total[1m])", "legendFormat": "factor" }],
+      "fieldConfig": { "defaults": { "thresholds": { "steps": [
+        { "color": "green", "value": null }, { "color": "yellow", "value": 1 }, { "color": "red", "value": 3 }
+      ]}}}
+    },
+    {
+      "id": 5, "type": "stat", "title": "DLQ Events (session)",
+      "gridPos": { "x": 16, "y": 0, "w": 4, "h": 4 },
+      "targets": [{ "expr": "increase(dlq_messages_total[1h])", "legendFormat": "dlq" }],
+      "fieldConfig": { "defaults": { "thresholds": { "steps": [
+        { "color": "green", "value": null }, { "color": "red", "value": 1 }
+      ]}}}
+    },
+    {
+      "id": 6, "type": "stat", "title": "Relay Throughput (msg/s)",
+      "gridPos": { "x": 20, "y": 0, "w": 4, "h": 4 },
+      "targets": [{ "expr": "rate(outbox_published_total{source='gateway'}[30s])", "legendFormat": "relay/s" }],
+      "fieldConfig": { "defaults": { "unit": "reqps" }}
+    },
+    {
+      "id": 10, "type": "timeseries", "title": "Throughput — Gateway vs Relay vs Consumer (msg/s)",
+      "gridPos": { "x": 0, "y": 4, "w": 24, "h": 8 },
+      "targets": [
+        { "expr": "rate(http_requests_total{handler='/api/messages',status='202'}[30s])", "legendFormat": "Gateway accepted" },
+        { "expr": "rate(outbox_published_total{source='gateway'}[30s])", "legendFormat": "Relay published" },
+        { "expr": "rate(messages_processed_total{status='success'}[30s])", "legendFormat": "Consumer processed" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "reqps", "custom": { "fillOpacity": 8, "lineWidth": 2 }}}
+    },
+    {
+      "id": 11, "type": "timeseries", "title": "Gateway Latency Percentiles (ms) — SLO lines at p99=200ms, p99=500ms",
+      "gridPos": { "x": 0, "y": 12, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(http_request_duration_ms_bucket{handler='/api/messages'}[30s]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(http_request_duration_ms_bucket{handler='/api/messages'}[30s]))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, rate(http_request_duration_ms_bucket{handler='/api/messages'}[30s]))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "ms" }}
+    },
+    {
+      "id": 12, "type": "timeseries", "title": "Outbox Backlog — Accumulation and Drain Rate",
+      "gridPos": { "x": 12, "y": 12, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "outbox_pending_events{source='gateway'}", "legendFormat": "Gateway pending" },
+        { "expr": "outbox_pending_events{source='consumer'}", "legendFormat": "Consumer pending" },
+        { "expr": "deriv(outbox_pending_events{source='gateway'}[1m])", "legendFormat": "Growth rate (rows/s)" }
+      ]
+    },
+    {
+      "id": 13, "type": "timeseries", "title": "Retry Funnel — Count by Attempt",
+      "gridPos": { "x": 0, "y": 20, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "rate(retry_count_total{attempt='1'}[30s])", "legendFormat": "Attempt 1" },
+        { "expr": "rate(retry_count_total{attempt='2'}[30s])", "legendFormat": "Attempt 2" },
+        { "expr": "rate(retry_count_total{attempt='3'}[30s])", "legendFormat": "Attempt 3" },
+        { "expr": "rate(retry_count_total{attempt='4'}[30s])", "legendFormat": "Attempt 4" },
+        { "expr": "rate(retry_count_total{attempt='5'}[30s])", "legendFormat": "Attempt 5 (exhaust)" }
+      ]
+    },
+    {
+      "id": 14, "type": "timeseries", "title": "Relay Scalability — Throughput vs Instance Count",
+      "description": "Use during Scenario 05. Each instance count stage should show higher throughput.",
+      "gridPos": { "x": 12, "y": 20, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "rate(outbox_published_total{source='gateway'}[30s])", "legendFormat": "Relay throughput" },
+        { "expr": "rate(outbox_fenced_publishes_total[30s])", "legendFormat": "Fencing events/s (contention indicator)" },
+        { "expr": "rate(outbox_reaper_reclaimed_total[30s])", "legendFormat": "Reaper reclaims/s" }
+      ]
+    },
+    {
+      "id": 15, "type": "timeseries", "title": "Queue Depths — work / retry / DLQ",
+      "gridPos": { "x": 0, "y": 28, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "rabbitmq_queue_messages{queue='messaging.work'}", "legendFormat": "Work queue" },
+        { "expr": "rabbitmq_queue_messages{queue='messaging.retry.q'}", "legendFormat": "Retry queue" },
+        { "expr": "rabbitmq_queue_messages{queue='messaging.dlq'}", "legendFormat": "DLQ" }
+      ]
+    },
+    {
+      "id": 16, "type": "timeseries", "title": "E2E Delivery Latency Percentiles (ms)",
+      "gridPos": { "x": 12, "y": 28, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(e2e_request_duration_ms_bucket[30s]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(e2e_request_duration_ms_bucket[30s]))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, rate(e2e_request_duration_ms_bucket[30s]))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "ms" }}
+    },
+    {
+      "id": 17, "type": "timeseries", "title": "Relay Latency — p50 / p95 / p99 (ms)",
+      "gridPos": { "x": 0, "y": 36, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(outbox_relay_latency_ms_bucket[30s]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(outbox_relay_latency_ms_bucket[30s]))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, rate(outbox_relay_latency_ms_bucket[30s]))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "ms" }}
+    },
+    {
+      "id": 18, "type": "timeseries", "title": "PostgreSQL Performance",
+      "gridPos": { "x": 12, "y": 36, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "pg_stat_activity_count{state='active'}", "legendFormat": "Active connections" },
+        { "expr": "rate(pg_stat_database_tup_inserted{datname='messages_db'}[30s])", "legendFormat": "Inserts/s" },
+        { "expr": "rate(pg_stat_database_deadlocks{datname='messages_db'}[30s])", "legendFormat": "Deadlocks/s" }
+      ]
+    },
+    {
+      "id": 20, "type": "table", "title": "Per-Scenario Success Criteria Status",
+      "gridPos": { "x": 0, "y": 44, "w": 24, "h": 10 },
+      "targets": [
+        {
+          "expr": "label_replace(vector(1),'criterion','gateway_p99_lt_200ms','','')",
+          "legendFormat": "{{criterion}}"
+        }
+      ],
+      "description": "Manual reference table — update after each scenario run",
+      "options": {
+        "footer": { "show": true, "reducer": ["sum"], "fields": "" }
+      }
+    }
+  ]
+}

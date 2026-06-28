@@ -1,0 +1,39 @@
+global:
+  scrape_interval: 10s
+  evaluation_interval: 10s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+rule_files:
+  - /etc/prometheus/alert_rules.yml
+
+scrape_configs:
+  # Gateway service /metrics (NestJS app.controller + prom-client default metrics)
+  - job_name: 'gateway'
+    static_configs:
+      - targets: ['showcase-gateway:3005']
+        labels:
+          service: gateway
+
+  # Messaging service /metrics (hybrid app HTTP health server, port 3006)
+  - job_name: 'messaging'
+    static_configs:
+      - targets: ['showcase-messaging:3006']
+        labels:
+          service: messaging
+
+  # OTel Collector's own re-exported metrics (OTLP metrics pipeline,
+  # i.e. SDK-side metrics such as runtime/auto-instrumentation counters
+  # that flow through OTLP rather than being scraped directly).
+  - job_name: 'otel-collector'
+    static_configs:
+      - targets: ['otel-collector:8889']
+        labels:
+          service: otel-collector
+
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']

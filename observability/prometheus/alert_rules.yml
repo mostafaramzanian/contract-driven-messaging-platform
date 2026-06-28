@@ -1,0 +1,103 @@
+groups:
+  - name: messaging-pipeline.rules
+    rules:
+      - alert: HighMessageFailureRate
+        expr: >
+          (
+            sum(rate(messages_failed_total[5m])) by (service)
+            /
+            clamp_min(sum(rate(messages_processed_total[5m])) by (service) + sum(rate(messages_failed_total[5m])) by (service), 1)
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'High message failure rate on {{ $labels.service }}'
+          description: >
+            More than 5% of messages failed processing on {{ $labels.service }}
+            over the last 5 minutes ({{ $value | printf "%.2f" }} ratio).
+
+      - alert: DlqMessagesGrowing
+        expr: increase(dlq_messages_total[15m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Messages landing in the dead-letter queue'
+          description: >
+            {{ $value }} message(s) landed in the DLQ on {{ $labels.service }}
+            in the last 15 minutes (error_class={{ $labels.error_class }}).
+            Inspect messaging.dlq via the management UI or DlqConsumerService logs.
+
+      - alert: ExcessiveRetries
+        expr: sum(rate(retry_count_total[5m])) by (service) > 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Sustained retry volume on {{ $labels.service }}'
+          description: >
+            Retry rate has exceeded 1/s for 10 minutes on {{ $labels.service }}.
+            This usually indicates a degraded downstream dependency
+            (PostgreSQL, RabbitMQ) rather than isolated transient errors.
+
+      - alert: OutboxBacklogGrowing
+        expr: outbox_pending_events > 100
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Outbox backlog growing on {{ $labels.service }}'
+          description: >
+            outbox_pending_events has been above 100 for 10 minutes on
+            {{ $labels.service }}. The OutboxPublisherService loop may be
+            stuck or the downstream sink may be unavailable.
+
+      - alert: OutboxBacklogCritical
+        expr: outbox_pending_events > 1000
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Outbox backlog critical on {{ $labels.service }}'
+          description: >
+            outbox_pending_events exceeded 1000 for 5 minutes on
+            {{ $labels.service }}. Immediate investigation required —
+            downstream notification consumers are likely starved.
+
+      - alert: SlowMessageProcessing
+        expr: >
+          histogram_quantile(0.95,
+            sum(rate(processing_duration_seconds_bucket[5m])) by (le, service, event_type)
+          ) > 2
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'p95 processing latency above 2s on {{ $labels.service }}'
+          description: >
+            p95 processing_duration_seconds for {{ $labels.event_type }} on
+            {{ $labels.service }} has exceeded 2s for 10 minutes.
+
+      - alert: ServiceDown
+        expr: up{job=~"gateway|messaging"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: '{{ $labels.job }} is not exporting metrics'
+          description: >
+            Prometheus has been unable to scrape {{ $labels.job }} for over
+            1 minute. The /metrics endpoint is unreachable or the process is down.
+
+      - alert: NoMessagesProcessedRecently
+        expr: sum(increase(messages_processed_total[15m])) by (service) == 0
+        for: 15m
+        labels:
+          severity: info
+        annotations:
+          summary: 'No messages processed by {{ $labels.service }} in 15m'
+          description: >
+            {{ $labels.service }} has not processed any messages in the last
+            15 minutes. May be expected during low traffic — verify against
+            gateway request volume before treating as an incident.

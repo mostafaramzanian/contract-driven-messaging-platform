@@ -61,13 +61,48 @@ describe('MessagesService', () => {
   });
 
   describe('findAll', () => {
-    it('should return all messages ordered by createdAt', async () => {
+    it('returns messages ordered by createdAt, with the default limit (50)', async () => {
       const result = await service.findAll();
 
       expect(mockRepository.find).toHaveBeenCalledWith({
         order: { createdAt: 'DESC' },
+        take: 50,
       });
       expect(result).toEqual([mockMessage]);
+    });
+
+    it('respects a caller-supplied limit within the allowed range', async () => {
+      await service.findAll({ limit: 10 });
+
+      expect(mockRepository.find).toHaveBeenCalledWith({
+        order: { createdAt: 'DESC' },
+        take: 10,
+      });
+    });
+
+    it('caps a caller-supplied limit at the hard ceiling (200), never rejects it', async () => {
+      await service.findAll({ limit: 100_000 });
+
+      expect(mockRepository.find).toHaveBeenCalledWith({
+        order: { createdAt: 'DESC' },
+        take: 200,
+      });
+    });
+
+    it('uses cursor-based filtering (createdAt < cursor) when a cursor is supplied', async () => {
+      const cursor = '2026-01-01T00:00:00.000Z';
+      await service.findAll({ cursor });
+
+      const callArg = mockRepository.find.mock.calls[0][0] as {
+        where?: { createdAt?: { _type?: string; _value?: Date } };
+        order: { createdAt: string };
+        take: number;
+      };
+      expect(callArg.order).toEqual({ createdAt: 'DESC' });
+      expect(callArg.take).toBe(50);
+      // TypeORM's LessThan() returns a FindOperator; assert its shape
+      // rather than the exact internal representation.
+      expect(callArg.where?.createdAt).toBeDefined();
     });
   });
 

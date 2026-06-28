@@ -1,0 +1,180 @@
+# docker-compose.reliability.yml
+#
+# Reliability Test Stack
+# ═══════════════════════════════════════════════════════════════════════════
+# Extends docker-compose.test.yml for the reliability test suite (scenarios
+# 01–10). Key differences from the integration test stack:
+#
+#  1. OUTBOX_LOCK_TTL_MS = 5000 (vs production 60000)
+#     Stale-lock reaper fires in 5s so crash-recovery tests don't take minutes.
+#
+#  2. OUTBOX_POLL_INTERVAL_MS = 2000 (vs production 5000)
+#     Relay polls every 2s so outbox rows are picked up quickly in assertions.
+#
+#  3. OUTBOX_REAPER_INTERVAL_MS = 5000
+#     Reaper runs every 5s — catches stale locks within one test timeout budget.
+#
+#  4. OUTBOX_CLAIM_BATCH_SIZE = 5
+#     Small batch keeps relay predictable during concurrent-claim tests.
+#
+#  5. INTERNAL_API_KEY = test-internal-key
+#     Allows the test runner to call /internal/outbox/:id/replay without auth.
+#
+#  6. EVENT_LIFECYCLE_TRACING = true  (same as integration stack)
+#     EventTracker works for trace-continuity assertions.
+#
+#  7. SHUTDOWN_TIMEOUT_MS = 10000
+#     NestJS graceful shutdown: 10s to drain in-flight work (scenario 9).
+#
+#  8. Container names use prefix showcase-test- (identical to test stack)
+#     so docker-control.ts CONTAINERS constants work unchanged.
+#
+# Usage:
+#   npm run test:reliability:up    # starts this stack
+#   npm run test:reliability:run   # runs jest with jest-reliability.json
+#   npm run test:reliability:down  # tears down and removes volumes
+#
+# WARNING: This stack and the dev stack (docker-compose.yml) use the same
+# host ports and cannot run simultaneously. Run `docker compose down` on the
+# dev stack before starting this one.
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: showcase-test-postgres
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-test_password}
+      POSTGRES_DB: ${DB_NAME:-showcase_test_db}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-admin} -d ${DB_NAME:-showcase_test_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    networks:
+      - showcase-test-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: showcase-test-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    networks:
+      - showcase-test-network
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: showcase-test-migrate
+    env_file:
+      - .env.test
+    environment:
+      DB_HOST: postgres
+    command: ["npm", "run", "migration:run:all"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - showcase-test-network
+
+  messaging:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: showcase-test-messaging
+    env_file:
+      - .env.test
+    environment:
+      DB_HOST: postgres
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+
+      # ── Reliability-tuned outbox knobs ────────────────────────────────────
+      # Short TTL so stale-lock reaper fires quickly in crash-recovery tests
+      OUTBOX_LOCK_TTL_MS: "5000"
+      # Fast poll interval so outbox rows are picked up within seconds
+      OUTBOX_POLL_INTERVAL_MS: "2000"
+      # Reaper runs every 5s (must be <= OUTBOX_LOCK_TTL_MS for correctness)
+      OUTBOX_REAPER_INTERVAL_MS: "5000"
+      # Small batch to keep concurrent-claim tests predictable
+      OUTBOX_CLAIM_BATCH_SIZE: "5"
+
+      # ── Service config ────────────────────────────────────────────────────
+      HEALTH_PORT: "3006"
+      SERVICE_NAME: messaging
+      NODE_ENV: test
+      OTEL_SDK_DISABLED: "true"
+      EVENT_LIFECYCLE_TRACING: "true"
+
+      # ── Auth ──────────────────────────────────────────────────────────────
+      # Allows test runner to call /internal/outbox/:id/replay
+      INTERNAL_API_KEY: "test-internal-key"
+
+      # ── Graceful shutdown ─────────────────────────────────────────────────
+      # NestJS will wait up to 10s for in-flight work to complete on SIGTERM
+      SHUTDOWN_TIMEOUT_MS: "10000"
+    ports:
+      - "3006:3006"
+    command: ["node", "dist/apps/messaging/main"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3006/internal/health/live || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - showcase-test-network
+
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: showcase-test-gateway
+    env_file:
+      - .env.test
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      PORT: 3005
+      SERVICE_NAME: gateway
+      MESSAGING_HEALTH_URL: http://messaging:3006/internal/health/ready
+      NODE_ENV: test
+      OTEL_SDK_DISABLED: "true"
+      EVENT_LIFECYCLE_TRACING: "true"
+      INTERNAL_API_KEY: "test-internal-key"
+      # ── Gateway producer-outbox reliability-tuned knobs ───────────────────
+      # Same rationale as the messaging service's OUTBOX_* knobs above —
+      # short TTL/poll/reaper intervals so crash-recovery and concurrent-
+      # claim tests against the GATEWAY outbox complete within a sane
+      # test-timeout budget instead of waiting on production defaults.
+      GATEWAY_OUTBOX_LOCK_TTL_MS: "5000"
+      GATEWAY_OUTBOX_POLL_INTERVAL_MS: "2000"
+      GATEWAY_OUTBOX_REAPER_INTERVAL_MS: "5000"
+      GATEWAY_OUTBOX_BATCH_SIZE: "5"
+    ports:
+      - "3005:3005"
+    command: ["node", "dist/apps/gateway/main"]
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      messaging:
+        condition: service_healthy
+    networks:
+      - showcase-test-network
+
+networks:
+  showcase-test-network:
+    driver: bridge

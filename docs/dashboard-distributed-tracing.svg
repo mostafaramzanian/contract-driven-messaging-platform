@@ -1,0 +1,158 @@
+<svg width="900" height="480" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<linearGradient id="t1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3B82F6" stop-opacity="0.15"/><stop offset="100%" stop-color="#3B82F6" stop-opacity="0.01"/></linearGradient>
+<linearGradient id="t2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="0.12"/><stop offset="100%" stop-color="#10B981" stop-opacity="0.01"/></linearGradient>
+<linearGradient id="t3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8B5CF6" stop-opacity="0.12"/><stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.01"/></linearGradient>
+</defs>
+<rect width="900" height="480" fill="#111217"/>
+<rect width="900" height="44" fill="#181b1f"/>
+<text x="16" y="27" font-family="Inter,sans-serif" font-size="13" font-weight="600" fill="#E5E7EB">Distributed Tracing</text>
+<text x="16" y="40" font-family="Inter,sans-serif" font-size="10" fill="#6B7280">OpenTelemetry · W3C trace context · Gateway → RabbitMQ → Consumer · Last 30 min</text>
+<rect x="706" y="12" width="112" height="20" rx="3" fill="#1C3829"/>
+<text x="762" y="25" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="600" fill="#34D399">● TRACE PIPELINE OK</text>
+<text x="830" y="25" font-family="Inter,sans-serif" font-size="10" fill="#6B7280">14:32 UTC</text>
+
+<!-- Stat cards -->
+<rect x="12" y="56" width="152" height="74" rx="6" fill="#181b1f"/>
+<text x="22" y="74" font-family="Inter,sans-serif" font-size="11" fill="#9DA5B4">Trace volume</text>
+<text x="22" y="106" font-family="Inter,sans-serif" font-size="30" font-weight="700" fill="#E5E7EB">7,431</text>
+<text x="22" y="123" font-family="Inter,sans-serif" font-size="10" fill="#6B7280">traces / 30 min</text>
+<rect x="172" y="56" width="152" height="74" rx="6" fill="#181b1f"/>
+<text x="182" y="74" font-family="Inter,sans-serif" font-size="11" fill="#9DA5B4">E2E p50 latency</text>
+<text x="182" y="106" font-family="Inter,sans-serif" font-size="30" font-weight="700" fill="#E5E7EB">143ms</text>
+<text x="182" y="123" font-family="Inter,sans-serif" font-size="10" fill="#6B7280">HTTP → consumer ACK</text>
+<rect x="332" y="56" width="152" height="74" rx="6" fill="#181b1f"/>
+<text x="342" y="74" font-family="Inter,sans-serif" font-size="11" fill="#9DA5B4">E2E p99 latency</text>
+<text x="342" y="106" font-family="Inter,sans-serif" font-size="30" font-weight="700" fill="#E5E7EB">1.2s</text>
+<text x="342" y="123" font-family="Inter,sans-serif" font-size="10" fill="#6B7280">incl. relay poll gap</text>
+<rect x="492" y="56" width="152" height="74" rx="6" fill="#181b1f"/>
+<text x="502" y="74" font-family="Inter,sans-serif" font-size="11" fill="#9DA5B4">Trace error rate</text>
+<text x="502" y="106" font-family="Inter,sans-serif" font-size="30" font-weight="700" fill="#E5E7EB">0.4%</text>
+<text x="502" y="123" font-family="Inter,sans-serif" font-size="10" fill="#6B7280">matches msg error rate</text>
+<rect x="652" y="56" width="236" height="74" rx="6" fill="#1C3829"/>
+<text x="662" y="74" font-family="Inter,sans-serif" font-size="11" fill="#6EE7B7">Root span orphans</text>
+<text x="662" y="106" font-family="Inter,sans-serif" font-size="30" font-weight="700" fill="#34D399">0</text>
+<text x="662" y="123" font-family="Inter,sans-serif" font-size="10" fill="#6EE7B7">trace context restored · W3C ✓</text>
+
+<!-- E2E latency percentiles chart -->
+<rect x="12" y="142" width="430" height="148" rx="6" fill="#181b1f"/>
+<text x="22" y="160" font-family="Inter,sans-serif" font-size="11" fill="#9DA5B4">End-to-end request duration — p50 / p95 / p99 (ms)</text>
+<rect x="22" y="168" width="410" height="110" rx="3" fill="#111217"/>
+<line x1="22" y1="198" x2="442" y2="198" stroke="#1F2937" stroke-width="1"/>
+<line x1="22" y1="222" x2="442" y2="222" stroke="#1F2937" stroke-width="1"/>
+<line x1="22" y1="246" x2="442" y2="246" stroke="#1F2937" stroke-width="1"/>
+<line x1="22" y1="270" x2="442" y2="270" stroke="#1F2937" stroke-width="1"/>
+<text x="17" y="201" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">2s</text>
+<text x="17" y="225" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">1s</text>
+<text x="17" y="249" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">500ms</text>
+<text x="17" y="273" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">200ms</text>
+<!-- p99 line (high, red) -->
+<path d="M28 208 C80 205 140 212 200 204 C260 196 320 208 380 200 C410 196 430 202 442 200" fill="none" stroke="#EF4444" stroke-width="1.5" stroke-dasharray="3 3"/>
+<!-- p95 line -->
+<path d="M28 234 C80 230 140 238 200 228 C260 218 320 232 380 224 C410 220 430 226 442 224" fill="none" stroke="#F59E0B" stroke-width="1.5" stroke-dasharray="5 3"/>
+<!-- p50 line (low, green) -->
+<path d="M28 268 C80 266 140 270 200 264 C260 258 320 266 380 262 C410 260 430 263 442 262" fill="none" stroke="#10B981" stroke-width="2"/>
+<circle cx="300" cy="160" r="3" fill="#10B981"/>
+<text x="306" y="164" font-family="Inter,sans-serif" font-size="9" fill="#9DA5B4">p50</text>
+<circle cx="332" cy="160" r="3" fill="#F59E0B"/>
+<text x="338" y="164" font-family="Inter,sans-serif" font-size="9" fill="#9DA5B4">p95</text>
+<circle cx="366" cy="160" r="3" fill="#EF4444"/>
+<text x="372" y="164" font-family="Inter,sans-serif" font-size="9" fill="#9DA5B4">p99</text>
+
+<!-- Span waterfall panel -->
+<rect x="452" y="142" width="436" height="148" rx="6" fill="#181b1f"/>
+<text x="462" y="160" font-family="Inter,sans-serif" font-size="11" fill="#9DA5B4">Representative trace — span waterfall (Trace ID: 4bf92f35…)</text>
+<text x="826" y="160" font-family="Inter,sans-serif" font-size="9" fill="#6B7280">Total: 312ms · 9 spans · 0 errors</text>
+<rect x="462" y="168" width="416" height="110" rx="3" fill="#111217"/>
+<!-- Span rows -->
+<!-- Row labels -->
+<text x="582" y="184" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#6B7280">POST /api/messages</text>
+<rect x="588" y="176" width="280" height="12" rx="2" fill="#1D4ED8" fill-opacity="0.3" stroke="#3B82F6" stroke-width="0.5"/>
+<text x="872" y="184" font-family="Inter,sans-serif" font-size="9" fill="#6B7280">312ms</text>
+
+<text x="582" y="200" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#6B7280">gateway.outbox_insert</text>
+<rect x="592" y="192" width="24" height="12" rx="2" fill="#1D4ED8" fill-opacity="0.5"/>
+<text x="620" y="200" font-family="Inter,sans-serif" font-size="9" fill="#6B7280">8ms</text>
+
+<text x="582" y="217" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#6B7280">[relay poll gap ~5s]</text>
+<rect x="592" y="209" width="140" height="12" rx="2" fill="#1F2937" stroke="#374151" stroke-width="0.5" stroke-dasharray="4 2"/>
+<text x="638" y="217" font-family="Inter,sans-serif" font-size="8" fill="#4B5563">async boundary — not in trace</text>
+
+<text x="582" y="234" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#6B7280">relay.publish_with_confirm</text>
+<rect x="636" y="226" width="36" height="12" rx="2" fill="#065F46" fill-opacity="0.6" stroke="#10B981" stroke-width="0.5"/>
+<text x="676" y="234" font-family="Inter,sans-serif" font-size="9" fill="#6B7280">12ms</text>
+
+<text x="582" y="251" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#6B7280">consumer.handle</text>
+<rect x="688" y="243" width="32" height="12" rx="2" fill="#4C1D95" fill-opacity="0.5" stroke="#8B5CF6" stroke-width="0.5"/>
+<text x="724" y="251" font-family="Inter,sans-serif" font-size="9" fill="#6B7280">11ms</text>
+
+<text x="582" y="268" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#6B7280">consumer.atomic_tx</text>
+<rect x="702" y="260" width="40" height="12" rx="2" fill="#4C1D95" fill-opacity="0.7" stroke="#8B5CF6" stroke-width="0.5"/>
+<text x="746" y="268" font-family="Inter,sans-serif" font-size="9" fill="#6B7280">14ms</text>
+
+<!-- Note -->
+<text x="730" y="276" font-family="Inter,sans-serif" font-size="8" fill="#4B5563">trace_context col → context.with() → 0 orphan spans</text>
+
+<!-- Top slow operations -->
+<rect x="12" y="302" width="430" height="166" rx="6" fill="#181b1f"/>
+<text x="22" y="320" font-family="Inter,sans-serif" font-size="11" fill="#9DA5B4">Top slow operations — p99 span duration</text>
+<rect x="22" y="328" width="410" height="128" rx="3" fill="#111217"/>
+<!-- Table rows -->
+<rect x="22" y="328" width="410" height="20" fill="#1F2937" rx="3"/>
+<text x="32" y="342" font-family="monospace,sans-serif" font-size="10" fill="#6B7280">operation</text>
+<text x="360" y="342" font-family="Inter,sans-serif" font-size="10" fill="#6B7280">p99</text>
+<text x="400" y="342" font-family="Inter,sans-serif" font-size="10" fill="#6B7280">status</text>
+
+<text x="32" y="363" font-family="monospace,sans-serif" font-size="10" fill="#E5E7EB">relay.publish_with_confirm</text>
+<text x="360" y="363" font-family="Inter,sans-serif" font-size="10" fill="#E5E7EB">38ms</text>
+<rect x="396" y="354" width="36" height="14" rx="3" fill="#2D1F07"/>
+<text x="414" y="364" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#F59E0B">watch</text>
+
+<text x="32" y="383" font-family="monospace,sans-serif" font-size="10" fill="#E5E7EB">consumer.atomic_tx</text>
+<text x="360" y="383" font-family="Inter,sans-serif" font-size="10" fill="#E5E7EB">26ms</text>
+<rect x="396" y="374" width="36" height="14" rx="3" fill="#1C3829"/>
+<text x="414" y="384" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#34D399">ok</text>
+
+<text x="32" y="403" font-family="monospace,sans-serif" font-size="10" fill="#E5E7EB">gateway.outbox_insert</text>
+<text x="360" y="403" font-family="Inter,sans-serif" font-size="10" fill="#E5E7EB">14ms</text>
+<rect x="396" y="394" width="36" height="14" rx="3" fill="#1C3829"/>
+<text x="414" y="404" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#34D399">ok</text>
+
+<text x="32" y="423" font-family="monospace,sans-serif" font-size="10" fill="#E5E7EB">consumer.schema_validation</text>
+<text x="360" y="423" font-family="Inter,sans-serif" font-size="10" fill="#E5E7EB">3ms</text>
+<rect x="396" y="414" width="36" height="14" rx="3" fill="#1C3829"/>
+<text x="414" y="424" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#34D399">ok</text>
+
+<text x="32" y="443" font-family="monospace,sans-serif" font-size="10" fill="#E5E7EB">consumer.idempotency_check</text>
+<text x="360" y="443" font-family="Inter,sans-serif" font-size="10" fill="#E5E7EB">2ms</text>
+<rect x="396" y="434" width="36" height="14" rx="3" fill="#1C3829"/>
+<text x="414" y="444" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#34D399">ok</text>
+
+<!-- Trace volume by service -->
+<rect x="452" y="302" width="436" height="166" rx="6" fill="#181b1f"/>
+<text x="462" y="320" font-family="Inter,sans-serif" font-size="11" fill="#9DA5B4">Trace volume by service — spans / min</text>
+<rect x="462" y="328" width="416" height="128" rx="3" fill="#111217"/>
+<line x1="462" y1="360" x2="878" y2="360" stroke="#1F2937" stroke-width="1"/>
+<line x1="462" y1="392" x2="878" y2="392" stroke="#1F2937" stroke-width="1"/>
+<line x1="462" y1="424" x2="878" y2="424" stroke="#1F2937" stroke-width="1"/>
+<text x="457" y="363" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">150</text>
+<text x="457" y="395" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">100</text>
+<text x="457" y="427" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">50</text>
+<path d="M468 372 C520 368 570 374 620 366 C670 358 720 370 770 364 C810 360 850 366 878 363 L878 456 L468 456 Z" fill="url(#t1)"/>
+<path d="M468 372 C520 368 570 374 620 366 C670 358 720 370 770 364 C810 360 850 366 878 363" fill="none" stroke="#3B82F6" stroke-width="1.5"/>
+<path d="M468 378 C520 374 570 380 620 372 C670 364 720 376 770 370 C810 366 850 372 878 369 L878 456 L468 456 Z" fill="url(#t2)"/>
+<path d="M468 378 C520 374 570 380 620 372 C670 364 720 376 770 370 C810 366 850 372 878 369" fill="none" stroke="#10B981" stroke-width="1.5"/>
+<path d="M468 382 C520 378 570 384 620 376 C670 368 720 380 770 374 C810 370 850 376 878 373 L878 456 L468 456 Z" fill="url(#t3)"/>
+<path d="M468 382 C520 378 570 384 620 376 C670 368 720 380 770 374 C810 370 850 376 878 373" fill="none" stroke="#8B5CF6" stroke-width="1.5"/>
+<circle cx="680" cy="320" r="3" fill="#3B82F6"/>
+<text x="686" y="324" font-family="Inter,sans-serif" font-size="9" fill="#9DA5B4">Gateway</text>
+<circle cx="726" cy="320" r="3" fill="#10B981"/>
+<text x="732" y="324" font-family="Inter,sans-serif" font-size="9" fill="#9DA5B4">Relay</text>
+<circle cx="770" cy="320" r="3" fill="#8B5CF6"/>
+<text x="776" y="324" font-family="Inter,sans-serif" font-size="9" fill="#9DA5B4">Consumer</text>
+
+<!-- Footer -->
+<rect x="0" y="462" width="900" height="18" fill="#0D0F12"/>
+<text x="16" y="474" font-family="Inter,sans-serif" font-size="9" fill="#374151">e2e_request_duration_ms · spans_total · spans_errors_total · trace_orphaned_root_spans_total</text>
+<text x="810" y="474" font-family="Inter,sans-serif" font-size="9" fill="#374151">Dashboard UID: cdmp-distributed-tracing</text>
+</svg>

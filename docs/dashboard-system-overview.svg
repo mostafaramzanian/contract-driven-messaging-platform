@@ -1,0 +1,137 @@
+<svg width="900" height="480" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3B82F6" stop-opacity="0.25"/><stop offset="100%" stop-color="#3B82F6" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="0.2"/><stop offset="100%" stop-color="#10B981" stop-opacity="0.02"/></linearGradient>
+</defs>
+<rect width="900" height="480" fill="#111217"/>
+<rect width="900" height="44" fill="#181b1f"/>
+<text x="16" y="27" font-family="Inter,sans-serif" font-size="13" font-weight="600" fill="#E5E7EB">System Overview</text>
+<text x="16" y="40" font-family="Inter,sans-serif" font-size="10" fill="#6B7280">contract-driven-messaging-platform · Last 30 min · Auto-refresh 10s</text>
+<rect x="726" y="12" width="80" height="20" rx="3" fill="#1C3829"/>
+<text x="766" y="25" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="600" fill="#34D399">● ALL NOMINAL</text>
+<text x="818" y="25" font-family="Inter,sans-serif" font-size="10" fill="#6B7280">14:32 UTC</text>
+
+<!-- Stat cards -->
+<rect x="12" y="56" width="134" height="74" rx="6" fill="#181b1f"/>
+<text x="22" y="74" font-family="Inter,sans-serif" font-size="11" fill="#9DA5B4">Messages / sec</text>
+<text x="22" y="106" font-family="Inter,sans-serif" font-size="30" font-weight="700" fill="#E5E7EB">247</text>
+<text x="22" y="123" font-family="Inter,sans-serif" font-size="10" fill="#34D399">↑ +12% vs 1h ago</text>
+<rect x="154" y="56" width="134" height="74" rx="6" fill="#181b1f"/>
+<text x="164" y="74" font-family="Inter,sans-serif" font-size="11" fill="#9DA5B4">Publish rate</text>
+<text x="164" y="106" font-family="Inter,sans-serif" font-size="30" font-weight="700" fill="#E5E7EB">251</text>
+<text x="164" y="123" font-family="Inter,sans-serif" font-size="10" fill="#34D399">↑ +9%</text>
+<rect x="296" y="56" width="134" height="74" rx="6" fill="#181b1f"/>
+<text x="306" y="74" font-family="Inter,sans-serif" font-size="11" fill="#9DA5B4">Consume rate</text>
+<text x="306" y="106" font-family="Inter,sans-serif" font-size="30" font-weight="700" fill="#E5E7EB">247</text>
+<text x="306" y="123" font-family="Inter,sans-serif" font-size="10" fill="#34D399">↑ +11%</text>
+<rect x="438" y="56" width="134" height="74" rx="6" fill="#1C3829"/>
+<text x="448" y="74" font-family="Inter,sans-serif" font-size="11" fill="#6EE7B7">Success rate</text>
+<text x="448" y="106" font-family="Inter,sans-serif" font-size="30" font-weight="700" fill="#34D399">99.6%</text>
+<text x="448" y="123" font-family="Inter,sans-serif" font-size="10" fill="#6EE7B7">SLO 99.5% ✓</text>
+<rect x="580" y="56" width="134" height="74" rx="6" fill="#181b1f"/>
+<text x="590" y="74" font-family="Inter,sans-serif" font-size="11" fill="#9DA5B4">Error rate</text>
+<text x="590" y="106" font-family="Inter,sans-serif" font-size="30" font-weight="700" fill="#E5E7EB">0.4%</text>
+<text x="590" y="123" font-family="Inter,sans-serif" font-size="10" fill="#6B7280">↓ −0.1% vs avg</text>
+<rect x="722" y="56" width="166" height="74" rx="6" fill="#181b1f"/>
+<text x="732" y="74" font-family="Inter,sans-serif" font-size="11" fill="#9DA5B4">Queue depth</text>
+<text x="732" y="106" font-family="Inter,sans-serif" font-size="30" font-weight="700" fill="#E5E7EB">18</text>
+<text x="732" y="123" font-family="Inter,sans-serif" font-size="10" fill="#6B7280">messaging.work · thresh 100</text>
+
+<!-- Throughput chart -->
+<rect x="12" y="142" width="574" height="186" rx="6" fill="#181b1f"/>
+<text x="22" y="160" font-family="Inter,sans-serif" font-size="11" fill="#9DA5B4">Throughput — publish vs consume rate (msg/s)</text>
+<rect x="22" y="166" width="554" height="150" rx="3" fill="#111217"/>
+<line x1="22" y1="207" x2="576" y2="207" stroke="#1F2937" stroke-width="1"/>
+<line x1="22" y1="236" x2="576" y2="236" stroke="#1F2937" stroke-width="1"/>
+<line x1="22" y1="265" x2="576" y2="265" stroke="#1F2937" stroke-width="1"/>
+<line x1="22" y1="294" x2="576" y2="294" stroke="#1F2937" stroke-width="1"/>
+<text x="17" y="210" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">300</text>
+<text x="17" y="239" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">250</text>
+<text x="17" y="268" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">200</text>
+<text x="17" y="297" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">150</text>
+<path d="M28 253 C65 246 100 238 140 244 C180 250 215 234 255 240 C295 246 330 228 370 235 C410 242 445 220 485 226 C525 232 555 215 576 218 L576 316 L28 316 Z" fill="url(#g1)"/>
+<path d="M28 253 C65 246 100 238 140 244 C180 250 215 234 255 240 C295 246 330 228 370 235 C410 242 445 220 485 226 C525 232 555 215 576 218" fill="none" stroke="#3B82F6" stroke-width="2"/>
+<path d="M28 258 C65 251 100 244 140 250 C180 256 215 240 255 246 C295 252 330 234 370 241 C410 248 445 226 485 232 C525 238 555 221 576 224 L576 316 L28 316 Z" fill="url(#g2)"/>
+<path d="M28 258 C65 251 100 244 140 250 C180 256 215 240 255 246 C295 252 330 234 370 241 C410 248 445 226 485 232 C525 238 555 221 576 224" fill="none" stroke="#10B981" stroke-width="2"/>
+<text x="28" y="325" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">14:02</text>
+<text x="148" y="325" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">14:09</text>
+<text x="268" y="325" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">14:17</text>
+<text x="388" y="325" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">14:24</text>
+<text x="520" y="325" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">14:32</text>
+<circle cx="430" cy="155" r="3" fill="#3B82F6"/>
+<text x="437" y="159" font-family="Inter,sans-serif" font-size="10" fill="#9DA5B4">Publish</text>
+<circle cx="480" cy="155" r="3" fill="#10B981"/>
+<text x="487" y="159" font-family="Inter,sans-serif" font-size="10" fill="#9DA5B4">Consume</text>
+
+<!-- Right panels column -->
+<rect x="594" y="142" width="294" height="186" rx="6" fill="#181b1f"/>
+<text x="604" y="160" font-family="Inter,sans-serif" font-size="11" fill="#9DA5B4">Success rate vs error rate (%)</text>
+<rect x="604" y="166" width="274" height="150" rx="3" fill="#111217"/>
+<line x1="604" y1="200" x2="878" y2="200" stroke="#1F2937" stroke-width="1"/>
+<line x1="604" y1="228" x2="878" y2="228" stroke="#1F2937" stroke-width="1"/>
+<line x1="604" y1="256" x2="878" y2="256" stroke="#1F2937" stroke-width="1"/>
+<line x1="604" y1="284" x2="878" y2="284" stroke="#1F2937" stroke-width="1"/>
+<text x="599" y="203" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">100%</text>
+<text x="599" y="231" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">99.8</text>
+<text x="599" y="259" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">99.5</text>
+<text x="599" y="287" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">99.0</text>
+<line x1="604" y1="256" x2="878" y2="256" stroke="#EF4444" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"/>
+<text x="820" y="252" font-family="Inter,sans-serif" font-size="8" fill="#EF4444">SLO 99.5%</text>
+<path d="M610 242 C630 239 650 241 670 238 C690 236 710 240 730 237 C750 235 770 238 790 235 C810 233 850 235 878 234" fill="none" stroke="#10B981" stroke-width="2"/>
+
+<!-- Queue depth -->
+<rect x="12" y="340" width="574" height="128" rx="6" fill="#181b1f"/>
+<text x="22" y="358" font-family="Inter,sans-serif" font-size="11" fill="#9DA5B4">Queue depth — messaging.work (alert threshold: 100)</text>
+<rect x="22" y="366" width="554" height="90" rx="3" fill="#111217"/>
+<line x1="22" y1="398" x2="576" y2="398" stroke="#1F2937" stroke-width="1"/>
+<line x1="22" y1="424" x2="576" y2="424" stroke="#1F2937" stroke-width="1"/>
+<line x1="22" y1="378" x2="576" y2="378" stroke="#EF4444" stroke-width="1" stroke-dasharray="4 3" opacity="0.4"/>
+<text x="548" y="375" font-family="Inter,sans-serif" font-size="8" fill="#EF4444">100</text>
+<text x="17" y="401" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">50</text>
+<text x="17" y="450" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">0</text>
+<!-- Queue depth bars (staying well below threshold) -->
+<rect x="30" y="432" width="13" height="14" rx="1" fill="#F59E0B" opacity="0.7"/>
+<rect x="49" y="425" width="13" height="21" rx="1" fill="#F59E0B" opacity="0.7"/>
+<rect x="68" y="430" width="13" height="16" rx="1" fill="#F59E0B" opacity="0.7"/>
+<rect x="87" y="427" width="13" height="19" rx="1" fill="#F59E0B" opacity="0.7"/>
+<rect x="106" y="434" width="13" height="12" rx="1" fill="#F59E0B" opacity="0.7"/>
+<rect x="125" y="429" width="13" height="17" rx="1" fill="#F59E0B" opacity="0.7"/>
+<rect x="144" y="424" width="13" height="22" rx="1" fill="#F59E0B" opacity="0.7"/>
+<rect x="163" y="431" width="13" height="15" rx="1" fill="#F59E0B" opacity="0.7"/>
+<rect x="182" y="427" width="13" height="19" rx="1" fill="#F59E0B" opacity="0.7"/>
+<rect x="201" y="432" width="13" height="14" rx="1" fill="#F59E0B" opacity="0.7"/>
+<rect x="220" y="425" width="13" height="21" rx="1" fill="#F59E0B" opacity="0.7"/>
+<rect x="239" y="433" width="13" height="13" rx="1" fill="#F59E0B" opacity="0.7"/>
+<rect x="258" y="427" width="13" height="19" rx="1" fill="#F59E0B" opacity="0.7"/>
+<rect x="277" y="431" width="13" height="15" rx="1" fill="#F59E0B" opacity="0.7"/>
+<rect x="296" y="424" width="13" height="22" rx="1" fill="#F59E0B" opacity="0.7"/>
+<rect x="315" y="429" width="13" height="17" rx="1" fill="#F59E0B" opacity="0.7"/>
+<rect x="334" y="433" width="13" height="13" rx="1" fill="#F59E0B" opacity="0.7"/>
+<rect x="353" y="427" width="13" height="19" rx="1" fill="#F59E0B" opacity="0.7"/>
+<rect x="372" y="430" width="13" height="16" rx="1" fill="#F59E0B" opacity="0.7"/>
+<rect x="391" y="425" width="13" height="21" rx="1" fill="#F59E0B" opacity="0.7"/>
+<rect x="410" y="432" width="13" height="14" rx="1" fill="#F59E0B" opacity="0.7"/>
+<rect x="429" y="428" width="13" height="18" rx="1" fill="#F59E0B" opacity="0.7"/>
+<rect x="448" y="431" width="13" height="15" rx="1" fill="#F59E0B" opacity="0.7"/>
+<rect x="467" y="426" width="13" height="20" rx="1" fill="#F59E0B" opacity="0.7"/>
+<rect x="486" y="433" width="13" height="13" rx="1" fill="#F59E0B" opacity="0.7"/>
+<rect x="505" y="429" width="13" height="17" rx="1" fill="#F59E0B" opacity="0.7"/>
+<rect x="524" y="424" width="13" height="22" rx="1" fill="#F59E0B" opacity="0.7"/>
+<rect x="543" y="431" width="13" height="15" rx="1" fill="#F59E0B" opacity="0.7"/>
+
+<!-- Error rate right panel bottom -->
+<rect x="594" y="340" width="294" height="128" rx="6" fill="#181b1f"/>
+<text x="604" y="358" font-family="Inter,sans-serif" font-size="11" fill="#9DA5B4">Error rate (%)</text>
+<rect x="604" y="366" width="274" height="90" rx="3" fill="#111217"/>
+<line x1="604" y1="400" x2="878" y2="400" stroke="#1F2937" stroke-width="1"/>
+<line x1="604" y1="425" x2="878" y2="425" stroke="#1F2937" stroke-width="1"/>
+<text x="599" y="393" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">1.0%</text>
+<text x="599" y="428" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">0.5%</text>
+<path d="M610 428 C630 424 650 430 670 423 C690 418 710 426 730 422 C750 418 770 424 790 420 C810 416 850 422 878 419" fill="none" stroke="#EF4444" stroke-width="1.5"/>
+<path d="M610 428 C630 424 650 430 670 423 C690 418 710 426 730 422 C750 418 770 424 790 420 C810 416 850 422 878 419 L878 456 L610 456 Z" fill="#EF4444" fill-opacity="0.07"/>
+
+<!-- Footer -->
+<rect x="0" y="462" width="900" height="18" fill="#0D0F12"/>
+<text x="16" y="474" font-family="Inter,sans-serif" font-size="9" fill="#374151">Prometheus · rate(messages_processed_total[1m]) · rabbitmq_queue_messages{queue="messaging.work"}</text>
+<text x="810" y="474" font-family="Inter,sans-serif" font-size="9" fill="#374151">Dashboard UID: cdmp-system-overview</text>
+</svg>

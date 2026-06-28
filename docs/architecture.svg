@@ -1,0 +1,178 @@
+<svg width="100%" viewBox="0 0 680 870" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>Contract-driven messaging platform — hero architecture diagram</title>
+<desc>Five-layer architecture: Client at top, Gateway service with producer outbox and relay, RabbitMQ with work queue, retry queue, and DLQ, Messaging service with idempotency layer and consumer outbox, PostgreSQL persistence at bottom, and an observability strip showing OpenTelemetry, Prometheus, and Grafana.</desc>
+<defs>
+<marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+<style>
+.th { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 14px; font-weight: 500; }
+.ts { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 12px; font-weight: 400; }
+.la { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9px; font-weight: 400; }
+</style>
+</defs>
+
+<!-- CLIENT -->
+<rect x="240" y="20" width="200" height="40" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
+<text class="th" x="340" y="40" text-anchor="middle" dominant-baseline="central" fill="#444441">HTTP client</text>
+<line x1="340" y1="60" x2="340" y2="93" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- APPLICATION LAYER CONTAINER -->
+<rect x="24" y="96" width="632" height="160" rx="10" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
+<text class="ts" x="36" y="114" dominant-baseline="central" fill="#0F6E56">Application layer — Gateway service</text>
+<!-- Gateway Service inner -->
+<rect x="40" y="122" width="174" height="120" rx="7" fill="#9FE1CB" stroke="#0F6E56" stroke-width="0.5"/>
+<text class="th" x="127" y="148" text-anchor="middle" dominant-baseline="central" fill="#085041">Gateway service</text>
+<text class="ts" x="127" y="166" text-anchor="middle" dominant-baseline="central" fill="#0F6E56">POST /api/messages</text>
+<text class="ts" x="127" y="182" text-anchor="middle" dominant-baseline="central" fill="#0F6E56">Zod · EventRegistry</text>
+<text class="ts" x="127" y="198" text-anchor="middle" dominant-baseline="central" fill="#0F6E56">202 Accepted</text>
+<text class="ts" x="127" y="216" text-anchor="middle" dominant-baseline="central" fill="#0F6E56">W3C trace capture</text>
+<rect x="44" y="230" width="166" height="14" rx="4" fill="#085041" opacity="0.85"/>
+<text class="la" x="127" y="237" text-anchor="middle" dominant-baseline="central" fill="#9FE1CB">contract validation on every publish</text>
+<!-- Producer Outbox inner -->
+<rect x="242" y="122" width="162" height="120" rx="7" fill="#9FE1CB" stroke="#0F6E56" stroke-width="0.5"/>
+<text class="th" x="323" y="148" text-anchor="middle" dominant-baseline="central" fill="#085041">Producer outbox</text>
+<text class="ts" x="323" y="166" text-anchor="middle" dominant-baseline="central" fill="#0F6E56">gateway_outbox_events</text>
+<text class="ts" x="323" y="182" text-anchor="middle" dominant-baseline="central" fill="#0F6E56">status · lock_version</text>
+<text class="ts" x="323" y="198" text-anchor="middle" dominant-baseline="central" fill="#0F6E56">trace_context column</text>
+<text class="ts" x="323" y="214" text-anchor="middle" dominant-baseline="central" fill="#0F6E56">TypeORM · PostgreSQL</text>
+<rect x="246" y="230" width="154" height="14" rx="4" fill="#085041" opacity="0.85"/>
+<text class="la" x="323" y="237" text-anchor="middle" dominant-baseline="central" fill="#9FE1CB">transactional write · atomic guarantee</text>
+<line x1="214" y1="182" x2="242" y2="182" stroke="#1D9E75" stroke-width="1.5" marker-end="url(#arr)"/>
+<!-- Gateway Relay inner -->
+<rect x="442" y="122" width="198" height="120" rx="7" fill="#9FE1CB" stroke="#0F6E56" stroke-width="0.5"/>
+<text class="th" x="541" y="148" text-anchor="middle" dominant-baseline="central" fill="#085041">Gateway relay</text>
+<text class="ts" x="541" y="166" text-anchor="middle" dominant-baseline="central" fill="#0F6E56">SKIP LOCKED + lock_version</text>
+<text class="ts" x="541" y="182" text-anchor="middle" dominant-baseline="central" fill="#0F6E56">Publisher confirms</text>
+<text class="ts" x="541" y="198" text-anchor="middle" dominant-baseline="central" fill="#0F6E56">Stale-lock reaper</text>
+<text class="ts" x="541" y="214" text-anchor="middle" dominant-baseline="central" fill="#0F6E56">Trace context restore</text>
+<rect x="446" y="230" width="190" height="14" rx="4" fill="#085041" opacity="0.85"/>
+<text class="la" x="541" y="237" text-anchor="middle" dominant-baseline="central" fill="#9FE1CB">fencing token · confirms = at-least-once</text>
+<line x1="404" y1="182" x2="442" y2="182" stroke="#1D9E75" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- Arrow: relay → RabbitMQ -->
+<line x1="541" y1="256" x2="541" y2="272" stroke="#1D9E75" stroke-width="1.5"/>
+<path d="M541 272 L340 272 L340 280" fill="none" stroke="#1D9E75" stroke-width="1.5" marker-end="url(#arr)"/>
+<text class="ts" x="440" y="269" text-anchor="middle" dominant-baseline="central" fill="#0F6E56">AMQP + publisher confirms</text>
+
+<!-- MESSAGING LAYER CONTAINER -->
+<rect x="24" y="282" width="632" height="148" rx="10" fill="#FAEEDA" stroke="#854F0B" stroke-width="0.5"/>
+<text class="ts" x="36" y="300" dominant-baseline="central" fill="#854F0B">Messaging layer — RabbitMQ</text>
+<!-- Work Queue -->
+<rect x="40" y="308" width="186" height="108" rx="7" fill="#FAC775" stroke="#854F0B" stroke-width="0.5"/>
+<text class="th" x="133" y="332" text-anchor="middle" dominant-baseline="central" fill="#412402">messaging.work</text>
+<text class="ts" x="133" y="350" text-anchor="middle" dominant-baseline="central" fill="#633806">Primary work queue</text>
+<text class="ts" x="133" y="366" text-anchor="middle" dominant-baseline="central" fill="#633806">durable · manual ACK</text>
+<text class="ts" x="133" y="382" text-anchor="middle" dominant-baseline="central" fill="#633806">messaging.direct</text>
+<!-- Retry Queue -->
+<rect x="251" y="308" width="178" height="108" rx="7" fill="#FAC775" stroke="#854F0B" stroke-width="0.5"/>
+<text class="th" x="340" y="332" text-anchor="middle" dominant-baseline="central" fill="#412402">messaging.retry.q</text>
+<text class="ts" x="340" y="350" text-anchor="middle" dominant-baseline="central" fill="#633806">TTL delay queue</text>
+<text class="ts" x="340" y="366" text-anchor="middle" dominant-baseline="central" fill="#633806">per-message TTL</text>
+<text class="ts" x="340" y="382" text-anchor="middle" dominant-baseline="central" fill="#633806">2ⁿ × 2s backoff</text>
+<!-- DLQ -->
+<rect x="454" y="308" width="186" height="108" rx="7" fill="#FAC775" stroke="#854F0B" stroke-width="0.5"/>
+<text class="th" x="547" y="332" text-anchor="middle" dominant-baseline="central" fill="#412402">messaging.dlq</text>
+<text class="ts" x="547" y="350" text-anchor="middle" dominant-baseline="central" fill="#633806">Dead-letter queue</text>
+<text class="ts" x="547" y="366" text-anchor="middle" dominant-baseline="central" fill="#633806">DlqConsumerService</text>
+<text class="ts" x="547" y="382" text-anchor="middle" dominant-baseline="central" fill="#633806">always ack · alert fires</text>
+<!-- Retry loop -->
+<path d="M340 308 L340 292 L133 292 L133 308" fill="none" stroke="#BA7517" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+<text class="ts" x="234" y="289" text-anchor="middle" dominant-baseline="central" fill="#854F0B">TTL expires → reroute</text>
+<!-- nack → retry -->
+<line x1="226" y1="375" x2="251" y2="375" stroke="#854F0B" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+<text class="ts" x="238" y="367" text-anchor="middle" dominant-baseline="central" fill="#854F0B">nack</text>
+<!-- permanent → DLQ -->
+<line x1="429" y1="375" x2="454" y2="375" stroke="#854F0B" stroke-width="1.5" marker-end="url(#arr)"/>
+<text class="ts" x="440" y="367" text-anchor="middle" dominant-baseline="central" fill="#854F0B">dlx</text>
+
+<!-- Arrow: broker → consumer -->
+<line x1="133" y1="416" x2="133" y2="440" stroke="#7F77DD" stroke-width="1.5"/>
+<path d="M133 440 L240 440 L240 450" fill="none" stroke="#7F77DD" stroke-width="1.5" marker-end="url(#arr)"/>
+<text class="ts" x="96" y="435" dominant-baseline="central" fill="#534AB7">delivery</text>
+
+<!-- CONSUMER LAYER CONTAINER -->
+<rect x="24" y="452" width="632" height="230" rx="10" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.5"/>
+<text class="ts" x="36" y="470" dominant-baseline="central" fill="#534AB7">Consumer layer — Messaging service</text>
+<!-- Consumer Handler -->
+<rect x="40" y="476" width="178" height="192" rx="7" fill="#CECBF6" stroke="#534AB7" stroke-width="0.5"/>
+<text class="th" x="129" y="502" text-anchor="middle" dominant-baseline="central" fill="#26215C">Consumer handler</text>
+<text class="ts" x="129" y="520" text-anchor="middle" dominant-baseline="central" fill="#3C3489">Schema version dispatch</text>
+<text class="ts" x="129" y="536" text-anchor="middle" dominant-baseline="central" fill="#3C3489">Zod validation</text>
+<text class="ts" x="129" y="552" text-anchor="middle" dominant-baseline="central" fill="#3C3489">v1 → v2 upcaster</text>
+<text class="ts" x="129" y="568" text-anchor="middle" dominant-baseline="central" fill="#3C3489">Error classifier</text>
+<text class="ts" x="129" y="584" text-anchor="middle" dominant-baseline="central" fill="#3C3489">event_attempts table</text>
+<text class="ts" x="129" y="600" text-anchor="middle" dominant-baseline="central" fill="#3C3489">channel.ack() / nack()</text>
+<text class="ts" x="129" y="616" text-anchor="middle" dominant-baseline="central" fill="#3C3489">correlationId · eventId</text>
+<!-- Atomic TX -->
+<rect x="244" y="476" width="192" height="192" rx="7" fill="#CECBF6" stroke="#534AB7" stroke-width="0.5"/>
+<text class="th" x="340" y="502" text-anchor="middle" dominant-baseline="central" fill="#26215C">Atomic transaction</text>
+<text class="ts" x="340" y="520" text-anchor="middle" dominant-baseline="central" fill="#3C3489">single QueryRunner</text>
+<rect x="260" y="532" width="160" height="50" rx="5" fill="#AFA9EC" opacity="0.5"/>
+<text class="ts" x="340" y="551" text-anchor="middle" dominant-baseline="central" fill="#26215C">processed_events</text>
+<text class="ts" x="340" y="567" text-anchor="middle" dominant-baseline="central" fill="#3C3489">UNIQUE event_id guard</text>
+<rect x="260" y="590" width="160" height="50" rx="5" fill="#AFA9EC" opacity="0.5"/>
+<text class="ts" x="340" y="609" text-anchor="middle" dominant-baseline="central" fill="#26215C">messages (business)</text>
+<text class="ts" x="340" y="625" text-anchor="middle" dominant-baseline="central" fill="#3C3489">outbox_events INSERT</text>
+<text class="ts" x="340" y="655" text-anchor="middle" dominant-baseline="central" fill="#3C3489">commit or full rollback</text>
+<rect x="248" y="656" width="184" height="12" rx="4" fill="#26215C" opacity="0.8"/>
+<text class="la" x="340" y="662" text-anchor="middle" dominant-baseline="central" fill="#CECBF6">idempotency enforced by UNIQUE constraint</text>
+<!-- Consumer Relay -->
+<rect x="462" y="476" width="178" height="192" rx="7" fill="#CECBF6" stroke="#534AB7" stroke-width="0.5"/>
+<text class="th" x="551" y="502" text-anchor="middle" dominant-baseline="central" fill="#26215C">Consumer relay</text>
+<text class="ts" x="551" y="520" text-anchor="middle" dominant-baseline="central" fill="#3C3489">SKIP LOCKED + fencing</text>
+<text class="ts" x="551" y="536" text-anchor="middle" dominant-baseline="central" fill="#3C3489">Publisher confirms</text>
+<text class="ts" x="551" y="552" text-anchor="middle" dominant-baseline="central" fill="#3C3489">Trace context restore</text>
+<text class="ts" x="551" y="568" text-anchor="middle" dominant-baseline="central" fill="#3C3489">Routes domain events</text>
+<text class="ts" x="551" y="584" text-anchor="middle" dominant-baseline="central" fill="#3C3489">→ messaging.events</text>
+<text class="ts" x="551" y="600" text-anchor="middle" dominant-baseline="central" fill="#3C3489">→ messaging.direct</text>
+<!-- handler → tx -->
+<line x1="218" y1="572" x2="244" y2="572" stroke="#7F77DD" stroke-width="1.5" marker-end="url(#arr)"/>
+<!-- tx → relay -->
+<line x1="436" y1="572" x2="462" y2="572" stroke="#7F77DD" stroke-width="1.5" marker-end="url(#arr)"/>
+<!-- consumer relay → broker (domain events) -->
+<path d="M551 476 L551 456 L600 456 L600 430" fill="none" stroke="#7F77DD" stroke-width="1" stroke-dasharray="5 3" marker-end="url(#arr)"/>
+
+<!-- PERSISTENCE LAYER -->
+<rect x="164" y="706" width="352" height="56" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text class="th" x="340" y="728" text-anchor="middle" dominant-baseline="central" fill="#0C447C">PostgreSQL</text>
+<text class="ts" x="340" y="746" text-anchor="middle" dominant-baseline="central" fill="#185FA5">gateway_outbox · processed_events · messages · event_attempts</text>
+<path d="M340 668 L340 706" fill="none" stroke="#185FA5" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- OBSERVABILITY STRIP -->
+<rect x="24" y="784" width="192" height="60" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
+<text class="th" x="120" y="808" text-anchor="middle" dominant-baseline="central" fill="#444441">OpenTelemetry</text>
+<text class="ts" x="120" y="826" text-anchor="middle" dominant-baseline="central" fill="#5F5E5A">W3C traceparent · Jaeger</text>
+<rect x="244" y="784" width="192" height="60" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
+<text class="th" x="340" y="808" text-anchor="middle" dominant-baseline="central" fill="#444441">Prometheus</text>
+<text class="ts" x="340" y="826" text-anchor="middle" dominant-baseline="central" fill="#5F5E5A">metrics · alerts · SLO</text>
+<rect x="464" y="784" width="192" height="60" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
+<text class="th" x="560" y="808" text-anchor="middle" dominant-baseline="central" fill="#444441">Grafana</text>
+<text class="ts" x="560" y="826" text-anchor="middle" dominant-baseline="central" fill="#5F5E5A">4 dashboards · DLQ alerts</text>
+
+<!-- Observability fan-in -->
+<line x1="90" y1="774" x2="590" y2="774" stroke="#888780" stroke-width="0.6" stroke-dasharray="3 3"/>
+<line x1="120" y1="774" x2="120" y2="784" stroke="#888780" stroke-width="0.8" stroke-dasharray="3 3" marker-end="url(#arr)"/>
+<line x1="340" y1="774" x2="340" y2="784" stroke="#888780" stroke-width="0.8" stroke-dasharray="3 3" marker-end="url(#arr)"/>
+<line x1="560" y1="774" x2="560" y2="784" stroke="#888780" stroke-width="0.8" stroke-dasharray="3 3" marker-end="url(#arr)"/>
+<line x1="340" y1="762" x2="340" y2="774" stroke="#888780" stroke-width="0.8" stroke-dasharray="3 3"/>
+<line x1="340" y1="706" x2="340" y2="762" stroke="#888780" stroke-width="0.6" stroke-dasharray="3 3"/>
+<path d="M200 756 L90 756 L90 774" fill="none" stroke="#888780" stroke-width="0.6" stroke-dasharray="3 3"/>
+<path d="M480 756 L590 756 L590 774" fill="none" stroke="#888780" stroke-width="0.6" stroke-dasharray="3 3"/>
+<!-- Right-side observability tap bar -->
+<line x1="656" y1="182" x2="656" y2="570" stroke="#888780" stroke-width="0.5" stroke-dasharray="2 4"/>
+<line x1="640" y1="182" x2="656" y2="182" stroke="#888780" stroke-width="0.5" stroke-dasharray="2 4"/>
+<line x1="640" y1="362" x2="656" y2="362" stroke="#888780" stroke-width="0.5" stroke-dasharray="2 4"/>
+<line x1="640" y1="570" x2="656" y2="570" stroke="#888780" stroke-width="0.5" stroke-dasharray="2 4"/>
+<path d="M656 570 L656 590 L590 590 L590 774" fill="none" stroke="#888780" stroke-width="0.5" stroke-dasharray="2 4"/>
+<text class="ts" x="669" y="375" text-anchor="middle" dominant-baseline="central" fill="#888780" transform="rotate(90,669,375)">spans · metrics · logs</text>
+
+<!-- LEGEND -->
+<rect x="24" y="852" width="632" height="1" rx="0" fill="#888780" opacity="0.3"/>
+<text class="ts" x="50" y="863" dominant-baseline="central" fill="#0F6E56">— normal flow</text>
+<line x1="130" y1="863" x2="152" y2="863" stroke="#0F6E56" stroke-width="1.5" marker-end="url(#arr)"/>
+<text class="ts" x="174" y="863" dominant-baseline="central" fill="#854F0B">- - failure path</text>
+<line x1="258" y1="863" x2="280" y2="863" stroke="#854F0B" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+<text class="ts" x="300" y="863" dominant-baseline="central" fill="#888780">· · · observability tap</text>
+<line x1="400" y1="863" x2="422" y2="863" stroke="#888780" stroke-width="0.8" stroke-dasharray="2 3" marker-end="url(#arr)"/>
+</svg>

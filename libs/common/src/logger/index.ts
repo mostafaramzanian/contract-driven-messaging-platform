@@ -1,5 +1,5 @@
-export * from './logger.factory';
+// Pino-based logger (replaces nest-winston/logger.factory)
+export * from './pino.factory';
+export * from './pino-logger.service';
 export * from './logger.module';
-export * from './logger.service';
 export * from './correlation-id.middleware';
-// CorrelationId decorator is unused in the codebase; do not export it

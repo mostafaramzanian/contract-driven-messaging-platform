@@ -1,0 +1,144 @@
+<svg width="900" height="480" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<linearGradient id="r1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#EF4444" stop-opacity="0.3"/><stop offset="100%" stop-color="#EF4444" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="r2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="0.2"/><stop offset="100%" stop-color="#10B981" stop-opacity="0.02"/></linearGradient>
+</defs>
+<rect width="900" height="480" fill="#111217"/>
+<rect width="900" height="44" fill="#181b1f"/>
+<text x="16" y="27" font-family="Inter,sans-serif" font-size="13" font-weight="600" fill="#E5E7EB">Reliability</text>
+<text x="16" y="40" font-family="Inter,sans-serif" font-size="10" fill="#6B7280">Retry activity · DLQ · Idempotency · Publisher confirms · Last 30 min</text>
+<rect x="700" y="10" width="148" height="24" rx="3" fill="#3D1515"/>
+<text x="774" y="25" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="600" fill="#FCA5A5">⚠ 3 DLQ EVENTS — FIRING</text>
+<text x="860" y="25" font-family="Inter,sans-serif" font-size="10" fill="#6B7280">14:32 UTC</text>
+
+<!-- Alert banner -->
+<rect x="12" y="52" width="876" height="22" rx="4" fill="#2D1515" stroke="#7F1D1D" stroke-width="0.5"/>
+<text x="22" y="66" font-family="Inter,sans-serif" font-size="10" font-weight="500" fill="#FCA5A5">● DLQMessageReceived — dlq_messages_total increased by 3 in last 15 min · Severity: critical · for: 0m</text>
+
+<!-- Stat cards row -->
+<rect x="12" y="82" width="134" height="74" rx="6" fill="#181b1f"/>
+<text x="22" y="100" font-family="Inter,sans-serif" font-size="11" fill="#9DA5B4">Retry rate</text>
+<text x="22" y="132" font-family="Inter,sans-serif" font-size="30" font-weight="700" fill="#E5E7EB">4.1/s</text>
+<text x="22" y="149" font-family="Inter,sans-serif" font-size="10" fill="#6B7280">attempt 1–5 combined</text>
+<rect x="154" y="82" width="134" height="74" rx="6" fill="#3D1515"/>
+<text x="164" y="100" font-family="Inter,sans-serif" font-size="11" fill="#FCA5A5">Retry exhaustions</text>
+<text x="164" y="132" font-family="Inter,sans-serif" font-size="30" font-weight="700" fill="#EF4444">3</text>
+<text x="164" y="149" font-family="Inter,sans-serif" font-size="10" fill="#FCA5A5">↑ in last 15 min</text>
+<rect x="296" y="82" width="134" height="74" rx="6" fill="#3D1515"/>
+<text x="306" y="100" font-family="Inter,sans-serif" font-size="11" fill="#FCA5A5">DLQ total (window)</text>
+<text x="306" y="132" font-family="Inter,sans-serif" font-size="30" font-weight="700" fill="#EF4444">3</text>
+<text x="306" y="149" font-family="Inter,sans-serif" font-size="10" fill="#FCA5A5">0 → 3 this window</text>
+<rect x="438" y="82" width="134" height="74" rx="6" fill="#1C3829"/>
+<text x="448" y="100" font-family="Inter,sans-serif" font-size="11" fill="#6EE7B7">Duplicates prevented</text>
+<text x="448" y="132" font-family="Inter,sans-serif" font-size="30" font-weight="700" fill="#34D399">1,204</text>
+<text x="448" y="149" font-family="Inter,sans-serif" font-size="10" fill="#6EE7B7">idempotency guard</text>
+<rect x="580" y="82" width="134" height="74" rx="6" fill="#1C3829"/>
+<text x="590" y="100" font-family="Inter,sans-serif" font-size="11" fill="#6EE7B7">Confirm failures</text>
+<text x="590" y="132" font-family="Inter,sans-serif" font-size="30" font-weight="700" fill="#34D399">0</text>
+<text x="590" y="149" font-family="Inter,sans-serif" font-size="10" fill="#6EE7B7">publisher confirms OK</text>
+<rect x="722" y="82" width="166" height="74" rx="6" fill="#1C3829"/>
+<text x="732" y="100" font-family="Inter,sans-serif" font-size="11" fill="#6EE7B7">Relay failures (fenced)</text>
+<text x="732" y="132" font-family="Inter,sans-serif" font-size="30" font-weight="700" fill="#34D399">2</text>
+<text x="732" y="149" font-family="Inter,sans-serif" font-size="10" fill="#6EE7B7">detected + logged</text>
+
+<!-- Retry funnel chart -->
+<rect x="12" y="168" width="574" height="180" rx="6" fill="#181b1f"/>
+<text x="22" y="186" font-family="Inter,sans-serif" font-size="11" fill="#9DA5B4">Retry count by attempt — retry_count_total{attempt="N"} (stacked)</text>
+<rect x="22" y="194" width="554" height="142" rx="3" fill="#111217"/>
+<line x1="22" y1="224" x2="576" y2="224" stroke="#1F2937" stroke-width="1"/>
+<line x1="22" y1="254" x2="576" y2="254" stroke="#1F2937" stroke-width="1"/>
+<line x1="22" y1="284" x2="576" y2="284" stroke="#1F2937" stroke-width="1"/>
+<line x1="22" y1="314" x2="576" y2="314" stroke="#1F2937" stroke-width="1"/>
+<text x="17" y="227" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">150</text>
+<text x="17" y="257" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">100</text>
+<text x="17" y="287" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">50</text>
+<text x="17" y="317" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">0</text>
+<!-- Stacked bars for each time bucket — attempt 1 (blue, tallest) -->
+<rect x="32" y="260" width="14" height="76" rx="1" fill="#3B82F6" opacity="0.8"/>
+<rect x="52" y="253" width="14" height="83" rx="1" fill="#3B82F6" opacity="0.8"/>
+<rect x="72" y="265" width="14" height="71" rx="1" fill="#3B82F6" opacity="0.8"/>
+<rect x="92" y="258" width="14" height="78" rx="1" fill="#3B82F6" opacity="0.8"/>
+<rect x="112" y="262" width="14" height="74" rx="1" fill="#3B82F6" opacity="0.8"/>
+<rect x="132" y="255" width="14" height="81" rx="1" fill="#3B82F6" opacity="0.8"/>
+<rect x="152" y="268" width="14" height="68" rx="1" fill="#3B82F6" opacity="0.8"/>
+<rect x="172" y="260" width="14" height="76" rx="1" fill="#3B82F6" opacity="0.8"/>
+<rect x="192" y="263" width="14" height="73" rx="1" fill="#3B82F6" opacity="0.8"/>
+<rect x="212" y="257" width="14" height="79" rx="1" fill="#3B82F6" opacity="0.8"/>
+<rect x="232" y="264" width="14" height="72" rx="1" fill="#3B82F6" opacity="0.8"/>
+<rect x="252" y="259" width="14" height="77" rx="1" fill="#3B82F6" opacity="0.8"/>
+<rect x="272" y="262" width="14" height="74" rx="1" fill="#3B82F6" opacity="0.8"/>
+<rect x="292" y="256" width="14" height="80" rx="1" fill="#3B82F6" opacity="0.8"/>
+<rect x="312" y="261" width="14" height="75" rx="1" fill="#3B82F6" opacity="0.8"/>
+<rect x="332" y="266" width="14" height="70" rx="1" fill="#3B82F6" opacity="0.8"/>
+<rect x="352" y="259" width="14" height="77" rx="1" fill="#3B82F6" opacity="0.8"/>
+<rect x="372" y="263" width="14" height="73" rx="1" fill="#3B82F6" opacity="0.8"/>
+<rect x="392" y="258" width="14" height="78" rx="1" fill="#3B82F6" opacity="0.8"/>
+<rect x="412" y="261" width="14" height="75" rx="1" fill="#3B82F6" opacity="0.8"/>
+<rect x="432" y="265" width="14" height="71" rx="1" fill="#3B82F6" opacity="0.8"/>
+<rect x="452" y="257" width="14" height="79" rx="1" fill="#3B82F6" opacity="0.8"/>
+<rect x="472" y="262" width="14" height="74" rx="1" fill="#3B82F6" opacity="0.8"/>
+<rect x="492" y="260" width="14" height="76" rx="1" fill="#3B82F6" opacity="0.8"/>
+<rect x="512" y="264" width="14" height="72" rx="1" fill="#3B82F6" opacity="0.8"/>
+<rect x="532" y="255" width="14" height="81" rx="1" fill="#3B82F6" opacity="0.8"/>
+<rect x="552" y="261" width="14" height="75" rx="1" fill="#3B82F6" opacity="0.8"/>
+<!-- Attempt 2 (amber, stacked on top of attempt 1 at reduced height) -->
+<rect x="32" y="248" width="14" height="12" rx="1" fill="#F59E0B" opacity="0.8"/>
+<rect x="52" y="241" width="14" height="12" rx="1" fill="#F59E0B" opacity="0.8"/>
+<rect x="72" y="253" width="14" height="12" rx="1" fill="#F59E0B" opacity="0.8"/>
+<rect x="92" y="246" width="14" height="12" rx="1" fill="#F59E0B" opacity="0.8"/>
+<rect x="112" y="250" width="14" height="12" rx="1" fill="#F59E0B" opacity="0.8"/>
+<rect x="132" y="243" width="14" height="12" rx="1" fill="#F59E0B" opacity="0.8"/>
+<rect x="152" y="256" width="14" height="12" rx="1" fill="#F59E0B" opacity="0.8"/>
+<rect x="172" y="248" width="14" height="12" rx="1" fill="#F59E0B" opacity="0.8"/>
+<!-- Attempt 3-5 (tiny slivers) — just a few visible -->
+<rect x="32" y="243" width="14" height="5" rx="1" fill="#EF4444" opacity="0.9"/>
+<rect x="52" y="236" width="14" height="5" rx="1" fill="#EF4444" opacity="0.9"/>
+<rect x="72" y="248" width="14" height="5" rx="1" fill="#EF4444" opacity="0.9"/>
+<!-- Legend -->
+<circle cx="350" cy="186" r="4" fill="#3B82F6"/>
+<text x="357" y="190" font-family="Inter,sans-serif" font-size="9" fill="#9DA5B4">Attempt 1</text>
+<circle cx="405" cy="186" r="4" fill="#F59E0B"/>
+<text x="412" y="190" font-family="Inter,sans-serif" font-size="9" fill="#9DA5B4">Attempt 2</text>
+<circle cx="460" cy="186" r="4" fill="#EF4444"/>
+<text x="467" y="190" font-family="Inter,sans-serif" font-size="9" fill="#9DA5B4">Attempt 3–5</text>
+
+<!-- DLQ chart right -->
+<rect x="594" y="168" width="294" height="180" rx="6" fill="#181b1f"/>
+<text x="604" y="186" font-family="Inter,sans-serif" font-size="11" fill="#9DA5B4">DLQ growth — dlq_messages_total</text>
+<rect x="604" y="194" width="274" height="142" rx="3" fill="#111217"/>
+<line x1="604" y1="240" x2="878" y2="240" stroke="#1F2937" stroke-width="1"/>
+<line x1="604" y1="280" x2="878" y2="280" stroke="#1F2937" stroke-width="1"/>
+<line x1="604" y1="320" x2="878" y2="320" stroke="#1F2937" stroke-width="1"/>
+<text x="599" y="230" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">3</text>
+<text x="599" y="270" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">2</text>
+<text x="599" y="310" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">1</text>
+<text x="599" y="336" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#4B5563">0</text>
+<!-- DLQ spike bars (3 isolated spikes) -->
+<rect x="670" y="280" width="14" height="56" rx="2" fill="#EF4444" opacity="0.85"/>
+<rect x="730" y="280" width="14" height="56" rx="2" fill="#EF4444" opacity="0.85"/>
+<rect x="810" y="280" width="14" height="56" rx="2" fill="#EF4444" opacity="0.85"/>
+<!-- DLQ alert label -->
+<rect x="650" y="200" width="106" height="16" rx="3" fill="#3D1515"/>
+<text x="703" y="211" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#FCA5A5">● ALERT FIRING</text>
+
+<!-- Idempotency chart bottom left -->
+<rect x="12" y="360" width="574" height="108" rx="6" fill="#181b1f"/>
+<text x="22" y="378" font-family="Inter,sans-serif" font-size="11" fill="#9DA5B4">Idempotency duplicates prevented vs redeliveries</text>
+<rect x="22" y="386" width="554" height="70" rx="3" fill="#111217"/>
+<line x1="22" y1="420" x2="576" y2="420" stroke="#1F2937" stroke-width="1"/>
+<path d="M28 436 C80 430 140 438 200 428 C260 418 320 432 380 422 C440 412 500 426 560 416 C568 414 574 418 576 416 L576 456 L28 456 Z" fill="#10B981" fill-opacity="0.12"/>
+<path d="M28 436 C80 430 140 438 200 428 C260 418 320 432 380 422 C440 412 500 426 560 416 C568 414 574 418 576 416" fill="none" stroke="#10B981" stroke-width="2"/>
+<path d="M28 438 C80 432 140 440 200 430 C260 420 320 434 380 424 C440 414 500 428 560 418 C568 416 574 420 576 418" fill="none" stroke="#3B82F6" stroke-width="1.5" stroke-dasharray="5 3"/>
+
+<!-- Confirm failures + fenced panel -->
+<rect x="594" y="360" width="294" height="108" rx="6" fill="#181b1f"/>
+<text x="604" y="378" font-family="Inter,sans-serif" font-size="11" fill="#9DA5B4">Publisher confirm failures + fenced publishes</text>
+<rect x="604" y="386" width="274" height="70" rx="3" fill="#111217"/>
+<text x="741" y="430" text-anchor="middle" font-family="Inter,sans-serif" font-size="28" font-weight="700" fill="#34D399">0</text>
+<text x="741" y="450" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#6EE7B7">confirm failures this window</text>
+
+<!-- Footer -->
+<rect x="0" y="462" width="900" height="18" fill="#0D0F12"/>
+<text x="16" y="474" font-family="Inter,sans-serif" font-size="9" fill="#374151">retry_count_total · dlq_messages_total · idempotency_duplicates_prevented_total · publisher_confirm_failures_total</text>
+<text x="810" y="474" font-family="Inter,sans-serif" font-size="9" fill="#374151">Dashboard UID: cdmp-reliability</text>
+</svg>

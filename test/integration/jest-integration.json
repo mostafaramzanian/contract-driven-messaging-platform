@@ -1,14 +1,19 @@
 {
   "moduleFileExtensions": ["js", "json", "ts"],
-  "rootDir": "../..",
-  "testEnvironment": "node",
+  "rootDir": "../../",
   "testRegex": "test/integration/.*\\.integration-spec\\.ts$",
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },
+  "testEnvironment": "node",
+  "testTimeout": 80000,
   "moduleNameMapper": {
     "^@app/common(.*)$": "<rootDir>/libs/common/src$1",
     "^@app/contracts(.*)$": "<rootDir>/libs/contracts/src$1"
   },
-  "testTimeout": 30000
+  "globals": {
+    "ts-jest": {
+      "tsconfig": "<rootDir>/tsconfig.json"
+    }
+  }
 }

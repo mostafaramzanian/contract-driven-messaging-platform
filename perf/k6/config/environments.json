@@ -1,0 +1,23 @@
+{
+  "local": {
+    "base_url":        "http://localhost:3000",
+    "prometheus_url":  "http://localhost:9090",
+    "jaeger_url":      "http://localhost:16686",
+    "rabbitmq_mgmt":   "http://localhost:15672",
+    "database_url":    "postgresql://postgres:postgres@localhost:5432/messages_db"
+  },
+  "ci": {
+    "base_url":        "http://gateway-service:3000",
+    "prometheus_url":  "http://prometheus:9090",
+    "jaeger_url":      "http://jaeger:16686",
+    "rabbitmq_mgmt":   "http://rabbitmq:15672",
+    "database_url":    "postgresql://postgres:postgres@postgres:5432/messages_db"
+  },
+  "staging": {
+    "base_url":        "${STAGING_GATEWAY_URL}",
+    "prometheus_url":  "${STAGING_PROMETHEUS_URL}",
+    "jaeger_url":      "${STAGING_JAEGER_URL}",
+    "rabbitmq_mgmt":   "${STAGING_RABBITMQ_MGMT_URL}",
+    "database_url":    "${STAGING_DATABASE_URL}"
+  }
+}

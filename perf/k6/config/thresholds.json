@@ -1,0 +1,85 @@
+{
+  "_comment": "Canonical success criteria. All k6 scenarios reference these values.",
+  "_last_updated": "2024-01-18",
+
+  "global": {
+    "gateway_error_rate_max_pct":          0.1,
+    "dlq_events_allowed":                  0,
+    "confirm_failures_allowed":            0,
+    "orphan_trace_spans_per_5m_max":       5
+  },
+
+  "scenarios": {
+    "01-baseline-throughput": {
+      "description": "Steady-state characteristics at three load levels",
+      "criteria": [
+        { "metric": "cdmp_gateway_latency_ms{level:low}",    "p50_lt": 30,  "p99_lt": 100, "must_pass": true },
+        { "metric": "cdmp_gateway_latency_ms{level:medium}", "p50_lt": 50,  "p99_lt": 200, "must_pass": true },
+        { "metric": "cdmp_gateway_latency_ms{level:high}",   "p50_lt": 100, "p99_lt": 500, "must_pass": false },
+        { "metric": "cdmp_outbox_pending_current",            "max": 500,                   "must_pass": true },
+        { "metric": "cdmp_dlq_events_observed",               "count_eq": 0,                "must_pass": true },
+        { "metric": "cdmp_events_failed",                     "rate_lt_pct": 0.1,           "must_pass": true }
+      ],
+      "pass_condition": "All must_pass=true criteria met",
+      "expected_saturation_msg_s": null
+    },
+
+    "02-ramp-to-peak": {
+      "description": "Find the saturation point via continuous ramp",
+      "criteria": [
+        { "metric": "http_req_duration{name:POST /api/messages}", "p99_lt": 2000, "abort_on_fail": true,  "must_pass": true },
+        { "metric": "cdmp_dlq_events_observed",                   "count_eq": 0,  "abort_on_fail": true,  "must_pass": true },
+        { "metric": "cdmp_events_failed",                         "rate_lt_pct": 5.0, "abort_on_fail": true, "must_pass": true }
+      ],
+      "expected_saturation_msg_s": 250,
+      "saturation_signal": "outbox_pending_events > 200 for 30s",
+      "pass_condition": "Test reaches 250 msg/s before any abort threshold fires"
+    },
+
+    "03-outbox-backlog": {
+      "description": "Relay constraint simulation — accumulation and drain",
+      "criteria": [
+        { "metric": "cdmp_dlq_events_observed",                  "count_eq": 0,   "must_pass": true  },
+        { "metric": "cdmp_gateway_latency_ms{phase:overload}",   "p99_lt": 500,   "must_pass": true  },
+        { "metric": "cdmp_events_failed",                        "count_lt": 20,  "must_pass": true  },
+        { "metric": "outbox_drain_time_s",                       "max": 120,      "must_pass": false }
+      ],
+      "pass_condition": "Zero DLQ events during 5-minute overload phase. Gateway remains available.",
+      "interpretation": "Peak pending / (overload_rate - relay_rate) = time to fill; drain_rate = relay_ceiling"
+    },
+
+    "04-retry-amplification": {
+      "description": "Consumer failure simulation — retry storm behavior",
+      "criteria": [
+        { "metric": "cdmp_dlq_events_observed",          "count_lt": 10,  "must_pass": true  },
+        { "metric": "cdmp_idempotency_duplicates",       "count_gt": 0,   "must_pass": true  },
+        { "metric": "cdmp_retry_rate{phase:steady_state}", "value_lt": 0.01, "must_pass": true },
+        { "metric": "cdmp_gateway_latency_ms",           "p99_lt": 300,   "must_pass": true  }
+      ],
+      "expected_amplification_at_80pct_fail": 4.0,
+      "expected_idempotency_catch_rate_pct":  95,
+      "pass_condition": "DLQ < 10, idempotency catches > 95% of duplicates, system recovers within 60s after failure disabled"
+    },
+
+    "05-relay-scalability": {
+      "description": "Horizontal relay scaling efficiency measurement",
+      "criteria": [
+        { "metric": "cdmp_dlq_events_observed",     "count_eq": 0,  "must_pass": true },
+        { "metric": "relay_scaling_efficiency_2x",  "min_pct": 80,  "must_pass": false },
+        { "metric": "relay_scaling_efficiency_4x",  "min_pct": 70,  "must_pass": false }
+      ],
+      "expected_single_relay_ceiling_msg_s": 250,
+      "pass_condition": "Zero DLQ events under multi-relay concurrency. Efficiency >= 70% at 4 instances.",
+      "interpretation": "Efficiency below 70% at 4 instances: bottleneck has shifted to DB SKIP LOCKED contention or broker"
+    }
+  },
+
+  "slo_summary": {
+    "gateway_availability_pct":    99.9,
+    "success_rate_pct":            99.5,
+    "gateway_p99_ms":              200,
+    "e2e_delivery_p99_ms":         2000,
+    "dlq_events_allowed_per_hour": 0,
+    "outbox_drain_after_outage_s": 120
+  }
+}

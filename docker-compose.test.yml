@@ -1,17 +1,14 @@
-# Host port mappings here (5432, 5672, 15672, 3005) are intentionally the
-# SAME as docker-compose.yml's (the dev stack), so that every environment
-# -- CI, this file run directly, and the host-side test runner -- talks to
-# RabbitMQ/Postgres/the gateway over one single, predictable address per
-# service, with no environment-specific port substitution anywhere.
+# Host port mappings here (5432, 5672, 15672, 3005, 3006) are intentionally
+# the SAME as docker-compose.yml (dev stack).  This test stack and the dev
+# stack cannot both run simultaneously on the same machine.  Stop the dev
+# stack (`docker-compose down`) before running `npm run test:integration`.
 #
-# Tradeoff: this test stack and the dev stack (docker-compose.yml) cannot
-# both be running on the same machine at the same time -- starting this
-# stack while `docker-compose up` (dev) is already running will fail with
-# a port-bind conflict, rather than the two coexisting on different ports.
-# This is deliberate: a single, deterministic, env-driven address per
-# service was prioritized over the convenience of running both stacks
-# side by side. Stop the dev stack (`docker-compose down`) before running
-# `npm run test:integration`.
+# EVOLUTION STAGE changes:
+#  - messaging service now exposes port 3006 (HEALTH_PORT) for the internal
+#    HTTP server that serves /internal/health/ready and /internal/health/live.
+#  - gateway receives MESSAGING_HEALTH_URL pointing at the internal host
+#    address so the gateway /health/ready probe can reach the messaging health.
+#  - health.integration-spec.ts uses MESSAGING_HEALTH_URL = 127.0.0.1:3006.
 services:
   postgres:
     image: postgres:15
@@ -53,7 +50,7 @@ services:
       - .env.test
     environment:
       DB_HOST: postgres
-    command: ["npm", "run", "migration:run"]
+    command: ["npm", "run", "migration:run:all"]
     depends_on:
       postgres:
         condition: service_healthy
@@ -70,6 +67,17 @@ services:
     environment:
       DB_HOST: postgres
       RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      # Internal HTTP server port for health probes
+      HEALTH_PORT: "3006"
+      SERVICE_NAME: messaging
+      # No OTel Collector in the test stack — disable the SDK so spans/metrics
+      # exporters don't retry against an unreachable OTLP endpoint and slow
+      # down or flake the integration suite. /metrics (prom-client) still
+      # works fine with OTEL_SDK_DISABLED=true.
+      OTEL_SDK_DISABLED: "true"
+    ports:
+      # Expose the internal health HTTP server to the host for probe assertions
+      - "3006:3006"
     command: ["node", "dist/apps/messaging/main"]
     depends_on:
       postgres:
@@ -78,6 +86,12 @@ services:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
+    healthcheck:
+      # The test runner waits for this before starting the gateway
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3006/internal/health/live || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
     networks:
       - showcase-test-network
 
@@ -91,6 +105,17 @@ services:
     environment:
       RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
       PORT: 3005
+      SERVICE_NAME: gateway
+      # URL the gateway /health/ready probe uses to check the messaging service.
+      # Inside the Docker network the messaging service is reachable by its
+      # service name 'messaging' on the HEALTH_PORT.
+      MESSAGING_HEALTH_URL: http://messaging:3006/internal/health/ready
+      OTEL_SDK_DISABLED: "true"
+      # Fast outbox knobs for integration tests — same rationale as the
+      # messaging service's OUTBOX_* knobs below.
+      GATEWAY_OUTBOX_POLL_INTERVAL_MS: "2000"
+      GATEWAY_OUTBOX_LOCK_TTL_MS: "5000"
+      GATEWAY_OUTBOX_REAPER_INTERVAL_MS: "5000"
     ports:
       - "3005:3005"
     command: ["node", "dist/apps/gateway/main"]
@@ -98,7 +123,7 @@ services:
       rabbitmq:
         condition: service_healthy
       messaging:
-        condition: service_started
+        condition: service_healthy
     networks:
       - showcase-test-network
 
